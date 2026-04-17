@@ -2,7 +2,7 @@ from pydantic_settings import BaseSettings
 from typing import Optional
 
 class Settings(BaseSettings):
-    PROJECT_NAME: str = "BizArchitect AI"
+    PROJECT_NAME: str = "Udyame AI"
     API_V1_STR: str = "/api/v1"
     
     # Database
@@ -28,7 +28,7 @@ class Settings(BaseSettings):
     SMTP_USER: Optional[str] = None
     SMTP_PASSWORD: Optional[str] = None
     EMAILS_FROM_EMAIL: str = "noreply@udyame.com"
-    EMAILS_FROM_NAME: str = "BizArchitect AI"
+    EMAILS_FROM_NAME: str = "Udyame AI"
     
     # Security
     SECRET_KEY: str = "SUPER_SECRET_KEY_REPLACE_IN_PROD"

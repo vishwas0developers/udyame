@@ -1,0 +1,43 @@
+# --- IDE & OS ---
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+
+# --- Python / FastAPI (Back_end) ---
+Back_end/venv/
+Back_end/__pycache__/
+Back_end/*.py[cod]
+Back_end/*$py.class
+Back_end/.pytest_cache/
+Back_end/.coverage
+Back_end/htmlcov/
+Back_end/.env
+Back_end/.env.local
+Back_end/app.db
+Back_end/instance/
+
+# --- Node.js / Next.js (frontend) ---
+frontend/node_modules/
+frontend/.next/
+frontend/out/
+frontend/build/
+frontend/dist/
+frontend/.env
+frontend/.env.local
+frontend/.env.development.local
+frontend/.env.test.local
+frontend/.env.production.local
+frontend/npm-debug.log*
+frontend/yarn-debug.log*
+frontend/yarn-error.log*
+frontend/.pnp*
+frontend/.pnpm-debug.log*
+
+# --- Project Specific ---
+*.log
+tmp/
+coverage/
+bitarchitect_logs/

@@ -1,7 +1,7 @@
-# PRD - Backend: BizArchitect AI
+# PRD - Backend: Udyame AI
 
 ## 1. Overview
-The backend of **BizArchitect AI** is a high-performance orchestration engine and administrative hub. It handles multi-tenant business data, persists context-aware memory via RAG, and includes an **integrated Admin Panel** for system governance. The backend is completely isolated from the user-facing frontend, serving as the "Source of Truth" and control center.
+The backend of **Udyame AI** is a high-performance orchestration engine and administrative hub. It handles multi-tenant business data, persists context-aware memory via RAG, and includes an **integrated Admin Panel** for system governance. The backend is completely isolated from the user-facing frontend, serving as the "Source of Truth" and control center.
 
 ## 2. Technology Stack
 - **Framework**: FastAPI (Python 3.11+)

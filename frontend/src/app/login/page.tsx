@@ -31,7 +31,7 @@ export default function LoginPage() {
       });
 
       const { access_token } = response.data;
-      
+
       // For this demo, we'll fetch user details or mock them
       // In a real app, you'd have a /me endpoint
       setAuth(
@@ -54,7 +54,7 @@ export default function LoginPage() {
         <CardHeader className="space-y-1">
           <CardTitle className="text-2xl text-white">Login</CardTitle>
           <CardDescription className="text-zinc-400">
-            Enter your credentials to access BizArchitect AI
+            Enter your credentials to access Udyame AI
           </CardDescription>
         </CardHeader>
         <CardContent>

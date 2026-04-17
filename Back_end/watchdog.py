@@ -20,14 +20,14 @@ class RestartHandler(FileSystemEventHandler):
 
     def start_process(self):
         if self.process:
-            print("\n[WATCHDOG] Change detected! Restarting BizArchitect AI Backend...")
+            print("\n[WATCHDOG] Change detected! Restarting Udyame AI Backend...")
             self.process.terminate()
             try:
                 self.process.wait(timeout=5)
             except subprocess.TimeoutExpired:
                 self.process.kill()
         else:
-            print("\n[WATCHDOG] Initializing BizArchitect AI Backend...")
+            print("\n[WATCHDOG] Initializing Udyame AI Backend...")
         
         # Start uvicorn as a subprocess
         # We use sys.executable to ensure we use the same python interpreter (venv)

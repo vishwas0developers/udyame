@@ -1,29 +1,51 @@
 @echo off
-title BizArchitect AI - Simultaneous Launcher
+setlocal enabledelayedexpansion
+title Udyame AI - Simultaneous Launcher
 cls
 
+:: Anchor to script directory
+set "ROOT_DIR=%~dp0"
+cd /d "%ROOT_DIR%"
+
 echo ==========================================================
-echo           BIZARCHITECT AI - SYSTEM LAUNCHER
+echo           Udyame AI - SYSTEM LAUNCHER
 echo ==========================================================
 echo.
 
+:: Check for Python
+python --version >nul 2>&1
+if %errorlevel% neq 0 (
+    echo [ERROR] Python not found. Please install Python to proceed.
+    pause
+    exit /b 1
+)
+
+:: Check for Node
+node --version >nul 2>&1
+if %errorlevel% neq 0 (
+    echo [ERROR] Node.js not found. Please install Node.js to proceed.
+    pause
+    exit /b 1
+)
+
 REM --- BACKEND SETUP ---
 echo [STEP 1/3] Preparing Backend (FastAPI)...
-cd Back_end
-if not exist venv (
+if not exist "Back_end\venv" (
     echo [INFO] Creating Python virtual environment...
-    python -m venv venv
+    python -m venv "Back_end\venv"
 )
+
 echo [INFO] Activating venv and checking requirements...
-call venv\Scripts\activate
-pip install -r requirements.txt > nul 2>&1
+:: Suppress pip warnings and version checks
+"%ROOT_DIR%Back_end\venv\Scripts\python.exe" -m pip install --upgrade pip --quiet
+"%ROOT_DIR%Back_end\venv\Scripts\python.exe" -m pip install -r "Back_end\requirements.txt" --quiet --no-cache-dir
 
 REM --- FRONTEND SETUP ---
 echo [STEP 2/3] Preparing Frontend (Next.js)...
-cd ..\frontend
-if not exist node_modules (
+if not exist "frontend\node_modules" (
     echo [INFO] Installing NPM packages (this may take a moment)...
-    call npm install > nul 2>&1
+    cd /d "%ROOT_DIR%frontend"
+    call npm install --no-audit --no-fund --loglevel=error
 )
 
 REM --- SIMULTANEOUS STARTUP ---
@@ -31,16 +53,17 @@ echo [STEP 3/3] Launching Simultaneous Services...
 echo.
 
 REM Launch Backend in a separate window
-echo [LAUNCH] Backend starting with Watchdog at http://localhost:8000
-start "BizArchitect Backend [API]" cmd /k "cd ../Back_end && venv\Scripts\activate && python watchdog.py"
+echo [LAUNCH] Backend starting [API]...
+:: Use absolute paths in the start command to prevent 'folder not found' errors
+start "Udyame Backend [API]" cmd /k "cd /d "%ROOT_DIR%Back_end" && call venv\Scripts\activate && python watchdog.py"
 
 REM Launch Frontend in a separate window
-echo [LAUNCH] Frontend starting at http://localhost:3000
-start "BizArchitect Frontend [UI]" cmd /k "npm run dev"
+echo [LAUNCH] Frontend starting [UI]...
+start "Udyame Frontend [UI]" cmd /k "cd /d "%ROOT_DIR%frontend" && npm run dev"
 
 echo.
 echo ==========================================================
-echo [SUCCESS] Both services have been launched in new windows.
+echo [SUCCESS] Both services have been launched successfully.
 echo ----------------------------------------------------------
 echo Admin Panel  : http://localhost:8000
 echo Backend API : http://localhost:8000/api/v1

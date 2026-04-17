@@ -17,7 +17,7 @@ interface Message {
 
 export default function WizardPage() {
   const [messages, setMessages] = useState<Message[]>([
-    { role: "assistant", content: "Welcome to BizArchitect AI! I'm here to help you build your business master plan. Let's start with the basics: What is your company's name?" }
+    { role: "assistant", content: "Welcome to Udyame AI! I'm here to help you build your business master plan. Let's start with the basics: What is your company's name?" }
   ]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
@@ -41,7 +41,7 @@ export default function WizardPage() {
     try {
       const response = await apiClient.post("/planning/chat", { prompt: userMsg });
       setMessages((prev) => [...prev, { role: "assistant", content: response.data.response }]);
-      
+
       // Update credits in store if returned
       if (response.data.remaining_credits !== undefined) {
         useAuthStore.getState().updateCredits(response.data.remaining_credits);
@@ -60,7 +60,7 @@ export default function WizardPage() {
       <header className="p-4 border-b border-zinc-900 flex justify-between items-center bg-zinc-950/50 backdrop-blur-md sticky top-0 z-10">
         <div className="flex items-center gap-2">
           <Bot className="text-indigo-500 h-6 w-6" />
-          <h1 className="font-bold text-lg">BizArchitect <span className="text-zinc-500 font-normal">| Master Planner</span></h1>
+          <h1 className="font-bold text-lg">Udyame <span className="text-zinc-500 font-normal">| Master Planner</span></h1>
         </div>
         <div className="flex items-center gap-4">
           <div className="text-xs text-zinc-400">
@@ -90,7 +90,7 @@ export default function WizardPage() {
               </div>
               <div className="bg-zinc-900 border border-zinc-800 rounded-2xl px-4 py-3 flex items-center gap-2">
                 <Loader2 className="h-4 w-4 animate-spin text-indigo-500" />
-                <span className="text-xs text-zinc-500 italic">BizArchitect is thinking...</span>
+                <span className="text-xs text-zinc-500 italic">Udyame is thinking...</span>
               </div>
             </div>
           )}
@@ -110,7 +110,7 @@ export default function WizardPage() {
                 onKeyDown={(e) => e.key === "Enter" && handleSend()}
                 className="flex-1 bg-transparent border-none text-zinc-200 focus-visible:ring-0 placeholder:text-zinc-600"
               />
-              <Button 
+              <Button
                 onClick={handleSend}
                 disabled={!input.trim() || loading}
                 size="icon"

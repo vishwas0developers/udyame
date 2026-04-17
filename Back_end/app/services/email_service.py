@@ -21,7 +21,7 @@ class EmailService:
         message = MIMEMultipart()
         message["From"] = f"{settings.EMAILS_FROM_NAME} <{settings.EMAILS_FROM_EMAIL}>"
         message["To"] = email_to
-        message["Subject"] = "Verify your BizArchitect AI account"
+        message["Subject"] = "Verify your Udyame AI account"
 
         verification_link = f"http://localhost:3000/verify?token={token}"
         body = f"Please click the link below to verify your account:\n\n{verification_link}"

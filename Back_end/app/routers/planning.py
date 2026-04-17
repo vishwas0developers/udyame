@@ -86,7 +86,7 @@ async def chat_with_architect(
         # Prepare context for AI
         context = "\n".join([f"Q: {a['question']} A: {a['answer']}" for a in answers])
         messages = [
-            {"role": "system", "content": "You are BizArchitect AI. You have just completed the core discovery. Provide a 2-sentence summary of the business and ask if they have any specific concerns."},
+            {"role": "system", "content": "You are Udyame AI. You have just completed the core discovery. Provide a 2-sentence summary of the business and ask if they have any specific concerns."},
             {"role": "user", "content": f"Here is my business profile:\n{context}"}
         ]
         ai_response = ai_service.generate_response(messages)

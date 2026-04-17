@@ -1,7 +1,7 @@
-# PRD - Frontend: BizArchitect AI
+# PRD - Frontend: Udyame AI
 
 ## 1. Overview
-The frontend of **BizArchitect AI** is a professional-grade, user-oriented SaaS application focusing on guided business growth. It is strictly dedicated to the end-user experience, providing tools for conversational planning and document management. All administrative functions are isolated within the backend system.
+The frontend of **Udyame AI** is a professional-grade, user-oriented SaaS application focusing on guided business growth. It is strictly dedicated to the end-user experience, providing tools for conversational planning and document management. All administrative functions are isolated within the backend system.
 
 ## 2. Technology Stack
 - **Framework**: Next.js 14+ (App Router, React)
@@ -27,7 +27,7 @@ The frontend of **BizArchitect AI** is a professional-grade, user-oriented SaaS 
 
 ## 4. Core User Interfaces
 
-### A. The "BizArchitect" Chat (User)
+### A. The "Udyame" Chat (User)
 - **Conversational Q&A**: Handles the 10 permanent questions and dynamic follows-ups.
 - **Micro-Interactions**: Typing indicators, auto-save status, and "Explain This" tooltips for complex business terms.
 - **Gap Detection Alerts**: Visual cues when AI identifies missing information in the user's business profile.
