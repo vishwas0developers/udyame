@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}BizArchitect AI Admin{% endblock %}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+    </style>
+</head>
+<body class="bg-slate-900 text-slate-200">
+    <div class="flex h-screen overflow-hidden">
+        <!-- Sidebar -->
+        <aside class="w-64 bg-slate-800 border-r border-slate-700 flex-shrink-0 flex flex-col">
+            <div class="p-6">
+                <h1 class="text-xl font-bold text-indigo-400 flex items-center">
+                    <i class="fas fa-microchip mr-2"></i> BizArchitect Admin
+                </h1>
+            </div>
+            
+            <nav class="flex-1 px-4 py-2 space-y-1">
+                <a href="/dashboard" class="flex items-center px-4 py-3 rounded-lg hover:bg-slate-700 transition {% if active_page == 'dashboard' %}bg-slate-700 text-indigo-400{% endif %}">
+                    <i class="fas fa-chart-line w-6"></i> Dashboard
+                </a>
+                <a href="/questions" class="flex items-center px-4 py-3 rounded-lg hover:bg-slate-700 transition {% if active_page == 'questions' %}bg-slate-700 text-indigo-400{% endif %}">
+                    <i class="fas fa-question-circle w-6"></i> Question Queue
+                </a>
+                <a href="/models" class="flex items-center px-4 py-3 rounded-lg hover:bg-slate-700 transition {% if active_page == 'models' %}bg-slate-700 text-indigo-400{% endif %}">
+                    <i class="fas fa-brain w-6"></i> AI Models
+                </a>
+                <a href="/users" class="flex items-center px-4 py-3 rounded-lg hover:bg-slate-700 transition {% if active_page == 'users' %}bg-slate-700 text-indigo-400{% endif %}">
+                    <i class="fas fa-users w-6"></i> User Management
+                </a>
+                <div class="pt-4 pb-2 text-xs font-semibold text-slate-500 uppercase tracking-wider px-4">System</div>
+                <a href="/logs" class="flex items-center px-4 py-3 rounded-lg hover:bg-slate-700 transition">
+                    <i class="fas fa-list-alt w-6"></i> Audit Logs
+                </a>
+            </nav>
+
+            <div class="p-4 border-t border-slate-700">
+                <a href="/logout" class="flex items-center px-4 py-3 rounded-lg hover:bg-red-500/10 text-red-400 transition w-full">
+                    <i class="fas fa-sign-out-alt w-6"></i> Logout
+                </a>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="flex-1 overflow-y-auto bg-slate-900 p-8">
+            <header class="flex justify-between items-center mb-10">
+                <h2 class="text-3xl font-bold text-white">{% block header %}{% endblock %}</h2>
+                <div class="flex items-center space-x-4">
+                    <span class="text-sm text-slate-400">Welcome, <strong>Admin</strong></span>
+                    <div class="h-8 w-8 rounded-full bg-indigo-500 flex items-center justify-center text-white font-bold">A</div>
+                </div>
+            </header>
+
+            {% block content %}{% endblock %}
+        </main>
+    </div>
+</body>
+</html>
