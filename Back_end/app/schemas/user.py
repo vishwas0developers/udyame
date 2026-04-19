@@ -7,11 +7,13 @@ from datetime import datetime
 class UserCreate(BaseModel):
     email: EmailStr
     password: str
+    full_name: Optional[str] = None
 
 # User output (sanitized)
 class UserOut(BaseModel):
     id: UUID
     email: EmailStr
+    full_name: Optional[str] = None
     subscription_tier: str
     credit_balance: float
     created_at: datetime

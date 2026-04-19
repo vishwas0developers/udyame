@@ -11,6 +11,7 @@ class User(Base):
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     email = Column(String(255), unique=True, index=True, nullable=False)
     password_hash = Column(String(255), nullable=True)
+    full_name = Column(String(255), nullable=True)
     is_verified = Column(Boolean, default=False)
     verification_token = Column(String(100), nullable=True)
     subscription_tier = Column(String(50), default="FREE")
@@ -20,6 +21,25 @@ class User(Base):
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
     companies = relationship("Company", back_populates="owner", cascade="all, delete-orphan")
+    oauth_accounts = relationship("OAuthAccount", back_populates="user", cascade="all, delete-orphan")
+    refresh_tokens = relationship("RefreshToken", back_populates="user", cascade="all, delete-orphan")
+
+class OAuthAccount(Base):
+    __tablename__ = "oauth_accounts"
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"))
+    provider = Column(String(50), nullable=False) # e.g., 'google'
+    provider_user_id = Column(String(255), nullable=False, unique=True)
+    user = relationship("User", back_populates="oauth_accounts")
+
+class RefreshToken(Base):
+    __tablename__ = "refresh_tokens"
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"))
+    token = Column(String(255), unique=True, index=True, nullable=False)
+    expires_at = Column(DateTime, nullable=False)
+    is_revoked = Column(Boolean, default=False)
+    user = relationship("User", back_populates="refresh_tokens")
 
 class Company(Base):
     __tablename__ = "companies"

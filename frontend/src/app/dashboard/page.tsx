@@ -1,22 +1,50 @@
 "use client";
 
 import { useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { useAuthStore } from "@/store/useAuthStore";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import apiClient from "@/lib/api-client";
+import { toast } from "sonner";
 
 export default function DashboardPage() {
-  const { user, logout } = useAuthStore();
+  const { user, setAuth, logout } = useAuthStore();
   const router = useRouter();
+  const searchParams = useSearchParams();
 
   useEffect(() => {
-    if (!user) {
-      router.push("/login");
+    const token = searchParams.get("token");
+    
+    const fetchUser = async (authToken: string) => {
+      try {
+        const response = await apiClient.get("/auth/me", {
+          headers: { Authorization: `Bearer ${authToken}` }
+        });
+        setAuth(response.data, authToken);
+        // Clean up URL
+        router.replace("/dashboard");
+      } catch (error) {
+        console.error("Failed to fetch user:", error);
+        toast.error("Authentication failed. Please login again.");
+        router.push("/login");
+      }
+    };
+
+    if (token) {
+      fetchUser(token);
+    } else if (!user) {
+      // Check if we have a token in localStorage but no user in store
+      const savedToken = localStorage.getItem("auth_token");
+      if (savedToken) {
+        fetchUser(savedToken);
+      } else {
+        router.push("/login");
+      }
     }
-  }, [user, router]);
+  }, [user, router, searchParams, setAuth]);
 
   if (!user) {
     return <div>Loading...</div>;

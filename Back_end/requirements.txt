@@ -9,7 +9,7 @@ redis==5.0.1
 httpx==0.26.0
 litellm==1.25.1
 python-jose[cryptography]==3.3.0
-passlib[bcrypt]==1.7.4
+passlib[argon2]==1.7.4
 alembic==1.13.1
 minio==7.2.4
 python-multipart==0.0.9

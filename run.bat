@@ -183,7 +183,7 @@ start "udyame Frontend" /D "%FRONTEND_DIR%" cmd /k "echo Starting Frontend Dev S
 echo.
 echo ==========================================================
 echo [DONE] Startup commands sent to separate windows.
-echo Backend should be on http://localhost:8000
+echo Backend should be on http://localhost:5012
 echo Frontend should be on http://localhost:3000
 echo [INFO] Review any error shown above before closing this launcher window.
 echo ==========================================================

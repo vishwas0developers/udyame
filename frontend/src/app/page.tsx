@@ -1,20 +1,34 @@
 "use client";
 
-import { useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { useAuthStore } from "@/store/useAuthStore";
 import { Bot, MessageSquare, FileText, LayoutDashboard, CheckCircle2, ArrowRight } from "lucide-react";
+import { LoginModal } from "@/components/LoginModal";
 
 export default function LandingPage() {
   const { isAuthenticated } = useAuthStore();
   const router = useRouter();
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+  const [authMode, setAuthMode] = useState<"login" | "signup">("login");
 
   useEffect(() => {
     if (isAuthenticated) {
       router.push("/dashboard");
+    }
+
+    // Handle deep-linking to auth modals via URL query params
+    const searchParams = new URLSearchParams(window.location.search);
+    const authParam = searchParams.get("auth");
+    if (authParam === "login") {
+      setAuthMode("login");
+      setIsLoginModalOpen(true);
+    } else if (authParam === "signup") {
+      setAuthMode("signup");
+      setIsLoginModalOpen(true);
     }
   }, [isAuthenticated, router]);
 
@@ -88,8 +102,22 @@ export default function LandingPage() {
             <div className="hidden md:flex items-center gap-8">
               <a href="#features" className="text-sm font-medium text-zinc-600 hover:text-indigo-600 transition-colors">Features</a>
               <a href="#pricing" className="text-sm font-medium text-zinc-600 hover:text-indigo-600 transition-colors">Pricing</a>
-              <Link href="/login" className="text-sm font-medium text-zinc-600 hover:text-indigo-600 transition-colors">Login</Link>
-              <Button render={(props: React.HTMLAttributes<HTMLAnchorElement>) => <Link {...props} href="/register" />} className="bg-indigo-600 hover:bg-indigo-700 shadow-sm shadow-indigo-200">
+              <button 
+                onClick={() => {
+                  setAuthMode("login");
+                  setIsLoginModalOpen(true);
+                }}
+                className="text-sm font-medium text-zinc-600 hover:text-indigo-600 transition-colors"
+              >
+                Login
+              </button>
+              <Button 
+                onClick={() => {
+                  setAuthMode("signup");
+                  setIsLoginModalOpen(true);
+                }}
+                className="bg-indigo-600 hover:bg-indigo-700 shadow-sm shadow-indigo-200"
+              >
                 Try Now
               </Button>
             </div>
@@ -124,7 +152,14 @@ export default function LandingPage() {
               Transform your business ideas into professional-grade plans and proposals with our conversational AI. Built for modern entrepreneurs.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
-              <Button size="lg" render={(props: React.HTMLAttributes<HTMLAnchorElement>) => <Link {...props} href="/register" />} className="h-12 px-8 text-base bg-indigo-600 hover:bg-indigo-700 shadow-lg shadow-indigo-200 group">
+              <Button 
+                size="lg" 
+                onClick={() => {
+                  setAuthMode("signup");
+                  setIsLoginModalOpen(true);
+                }}
+                className="h-12 px-8 text-base bg-indigo-600 hover:bg-indigo-700 shadow-lg shadow-indigo-200 group"
+              >
                 <>
                   Try for Free
                   <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
@@ -216,7 +251,14 @@ export default function LandingPage() {
                     </ul>
                   </CardContent>
                   <div className="p-6 pt-0">
-                    <Button variant={tier.variant} render={(props: React.HTMLAttributes<HTMLAnchorElement>) => <Link {...props} href={tier.href} />} className={`w-full h-11 ${tier.popular ? 'bg-indigo-600 hover:bg-indigo-700 shadow-md shadow-indigo-100' : ''}`}>
+                    <Button 
+                      variant={tier.variant} 
+                      onClick={() => {
+                        setAuthMode("signup");
+                        setIsLoginModalOpen(true);
+                      }}
+                      className={`w-full h-11 ${tier.popular ? 'bg-indigo-600 hover:bg-indigo-700 shadow-md shadow-indigo-100' : ''}`}
+                    >
                       {tier.buttonText}
                     </Button>
                   </div>
@@ -243,6 +285,12 @@ export default function LandingPage() {
           </p>
         </div>
       </footer>
+
+      <LoginModal 
+        isOpen={isLoginModalOpen} 
+        onClose={() => setIsLoginModalOpen(false)} 
+        initialMode={authMode}
+      />
     </div>
   );
 }

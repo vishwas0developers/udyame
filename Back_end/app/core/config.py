@@ -33,7 +33,14 @@ class Settings(BaseSettings):
     # Security
     SECRET_KEY: str = "SUPER_SECRET_KEY_REPLACE_IN_PROD"
     ALGORITHM: str = "HS256"
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 7  # 7 days
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 60  # 1 hour
+    REFRESH_TOKEN_EXPIRE_DAYS: int = 7    # 7 days
+
+    # Google OAuth
+    GOOGLE_CLIENT_ID: Optional[str] = None
+    GOOGLE_CLIENT_SECRET: Optional[str] = None
+    GOOGLE_CALLBACK_URL: str = "http://localhost:5012/api/v1/auth/google/callback"
+    FRONTEND_URL: str = "http://localhost:3000"
 
     class Config:
         env_file = ".env"

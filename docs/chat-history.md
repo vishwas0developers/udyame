@@ -1555,7 +1555,7 @@ CREDIT_WARNING_THRESHOLD=10.00
 
 **`Front_end/.env.local`**
 ```env
-NEXT_PUBLIC_API_URL=http://localhost:8000
+NEXT_PUBLIC_API_URL=http://localhost:5012
 NEXT_PUBLIC_APP_NAME=BizArchitect AI (udyame)
 ```
 

@@ -10,6 +10,7 @@ from typing import Sequence, Union
 from alembic import op
 import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
+from pgvector.sqlalchemy import Vector
 
 # revision identifiers, used by Alembic.
 revision: str = '001'
@@ -19,6 +20,9 @@ depends_on: str | Sequence[str] | None = None
 
 
 def upgrade() -> None:
+    # Enable pgvector extension
+    op.execute('CREATE EXTENSION IF NOT EXISTS vector')
+
     # Create users table
     op.create_table('users',
         sa.Column('id', postgresql.UUID(as_uuid=True), nullable=False),
@@ -69,7 +73,7 @@ def upgrade() -> None:
         sa.Column('text', sa.String(length=1000), nullable=False),
         sa.Column('category', sa.String(length=50), nullable=True),
         sa.Column('industry_tag', sa.String(length=100), nullable=True),
-        sa.Column('embedding', postgresql.VECTOR(1024), nullable=True),
+        sa.Column('embedding', Vector(1024), nullable=True),
         sa.Column('status', sa.String(length=20), nullable=True),
         sa.Column('approval_count', sa.Integer(), nullable=True),
         sa.Column('created_by', sa.String(length=50), nullable=True),
