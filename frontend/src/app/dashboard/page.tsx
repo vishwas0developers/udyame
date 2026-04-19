@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { useAuthStore } from "@/store/useAuthStore";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -62,8 +63,8 @@ export default function DashboardPage() {
                 <p className="text-sm text-muted-foreground mb-4">
                   Begin your entrepreneurial journey with our AI-powered business planning wizard.
                 </p>
-                <Button asChild className="w-full">
-                  <a href="/">Start Planning</a>
+                <Button render={(props: React.HTMLAttributes<HTMLAnchorElement>) => <Link {...props} href="/wizard" />} className="w-full">
+                  Start Planning
                 </Button>
               </CardContent>
             </Card>

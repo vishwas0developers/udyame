@@ -5,7 +5,6 @@ import { useAuthStore } from "@/store/useAuthStore";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { Send, Bot, User as UserIcon, Loader2 } from "lucide-react";
 import apiClient from "@/lib/api-client";
 import { toast } from "sonner";
@@ -47,7 +46,7 @@ export default function WizardPage() {
         useAuthStore.getState().updateCredits(response.data.remaining_credits);
       }
     } catch (error: any) {
-      toast.error(error.response?.data?.detail || "Something went wrong</strong>.");
+      toast.error(error.response?.data?.detail || "Something went wrong.");
       setMessages((prev) => [...prev, { role: "assistant", content: "I encountered an error. Please try again." }]);
     } finally {
       setLoading(false);
@@ -71,7 +70,7 @@ export default function WizardPage() {
       </header>
 
       {/* Chat Area */}
-      <ScrollArea className="flex-1 p-6" viewportRef={scrollRef}>
+      <div className="flex-1 overflow-y-auto p-6" ref={scrollRef}>
         <div className="max-w-3xl mx-auto space-y-6">
           {messages.map((m, i) => (
             <div key={i} className={`flex gap-4 ${m.role === "user" ? "flex-row-reverse" : ""}`}>
@@ -95,7 +94,7 @@ export default function WizardPage() {
             </div>
           )}
         </div>
-      </ScrollArea>
+      </div>
 
       {/* Input Area */}
       <div className="p-6 bg-gradient-to-t from-black via-black to-transparent">

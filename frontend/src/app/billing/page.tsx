@@ -32,9 +32,17 @@ const PLANS = [
   },
 ];
 
+interface HistoryItem {
+  id: number;
+  type: string;
+  amount: number;
+  balance: number;
+  date: string;
+}
+
 export default function BillingPage() {
   const [balance, setBalance] = useState("0");
-  const [history, setHistory] = useState([]);
+  const [history, setHistory] = useState<HistoryItem[]>([]);
 
   // Mock data for now since we need to integrate real API
   useEffect(() => {

@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/badge"; // Note: Importing Button from badge is wrong, should be from button. I'll fix it.
+import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -17,15 +17,26 @@ import {
   AlertTriangle
 } from "lucide-react";
 
-// Fix for the Button import issue noted above
-import { Button as UIButton } from "@/components/ui/button";
+interface PendingQuestion {
+  id: string;
+  text: string;
+  industry: string;
+  generated_at: string;
+}
 
-const PENDING_QUESTIONS = [
+const PENDING_QUESTIONS: PendingQuestion[] = [
   { id: "1", text: "How do you handle inventory seasonal spikes?", industry: "Retail", generated_at: "2h ago" },
   { id: "2", text: "What is your primary tech stack for scalability?", industry: "Tech", generated_at: "5h ago" },
 ];
 
-const SYSTEM_METRICS = [
+interface SystemMetric {
+  label: string;
+  value: string;
+  icon: any;
+  color: string;
+}
+
+const SYSTEM_METRICS: SystemMetric[] = [
   { label: "Active Users", value: "1,248", icon: Users, color: "text-blue-600" },
   { label: "AI Models Healthy", value: "4/4", icon: Cpu, color: "text-emerald-600" },
   { label: "Pending Reviews", value: "12", icon: HelpCircle, color: "text-amber-600" },
@@ -40,9 +51,9 @@ export default function AdminDashboard() {
           <h1 className="text-4xl font-extrabold tracking-tight text-slate-900 dark:text-white">Admin Control Center</h1>
           <p className="text-slate-500 mt-2 text-lg">Monitor system health and moderate self-learned AI content.</p>
         </div>
-        <UIButton variant="outline" className="gap-2">
+        <Button variant="outline" className="gap-2">
           <Settings2 className="w-4 h-4" /> System Config
-        </UIButton>
+        </Button>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -89,12 +100,12 @@ export default function AdminDashboard() {
                     </TableCell>
                     <TableCell className="text-slate-400 text-xs">{q.generated_at}</TableCell>
                     <TableCell className="text-right flex justify-end gap-2">
-                      <UIButton size="sm" variant="outline" className="h-8 border-emerald-200 text-emerald-600 hover:bg-emerald-50 hover:text-emerald-700">
+                      <Button size="sm" variant="outline" className="h-8 border-emerald-200 text-emerald-600 hover:bg-emerald-50 hover:text-emerald-700">
                         <CheckCircle2 className="w-4 h-4 mr-1" /> Approve
-                      </UIButton>
-                      <UIButton size="sm" variant="ghost" className="h-8 text-rose-600 hover:text-rose-700 hover:bg-rose-50 px-2">
+                      </Button>
+                      <Button size="sm" variant="ghost" className="h-8 text-rose-600 hover:text-rose-700 hover:bg-rose-50 px-2">
                         <XCircle className="w-4 h-4" />
-                      </UIButton>
+                      </Button>
                     </TableCell>
                   </TableRow>
                 ))}
@@ -132,9 +143,9 @@ export default function AdminDashboard() {
                  </div>
                ))}
              </div>
-             <UIButton className="w-full bg-slate-900 hover:bg-slate-800 text-white shadow-md">
+             <Button className="w-full bg-slate-900 hover:bg-slate-800 text-white shadow-md">
                Manage Providers
-             </UIButton>
+             </Button>
           </CardContent>
         </Card>
       </div>

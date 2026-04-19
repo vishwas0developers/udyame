@@ -17,7 +17,16 @@ import {
   HardDrive
 } from "lucide-react";
 
-const DOCUMENTS = [
+interface Document {
+  id: string;
+  title: string;
+  type: string;
+  date: string;
+  status: string;
+  industry: string;
+}
+
+const DOCUMENTS: Document[] = [
   {
     id: "1",
     title: "EcoSmart Logistics - Phase 1 Plan",
