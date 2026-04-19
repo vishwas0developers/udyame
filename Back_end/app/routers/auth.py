@@ -50,7 +50,7 @@ def register(user_in: UserCreate, db: Session = Depends(get_db)):
         full_name=user_in.full_name,
         verification_token=verification_token,
         is_verified=False,
-        credit_balance=50.0
+        credit_balance=0.0
     )
     db.add(new_user)
     db.commit()
@@ -148,7 +148,7 @@ async def google_callback(code: str, response: Response, db: Session = Depends(g
             email=email, 
             full_name=user_info.get("name"), 
             is_verified=True, # OAuth emails are typically verified
-            credit_balance=50.0
+            credit_balance=0.0
         )
         db.add(user)
         db.flush()

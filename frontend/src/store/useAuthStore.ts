@@ -3,6 +3,7 @@ import { create } from "zustand";
 interface User {
   id: string;
   email: string;
+  full_name?: string;
   plan_id?: string;
   subscription_plan?: {
     id: string;

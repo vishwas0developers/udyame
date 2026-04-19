@@ -6,95 +6,54 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { useAuthStore } from "@/store/useAuthStore";
-import { Bot, MessageSquare, FileText, LayoutDashboard, CheckCircle2, ArrowRight } from "lucide-react";
-import { LoginModal } from "@/components/LoginModal";
+import { MessageSquare, FileText, LayoutDashboard, CheckCircle2, ArrowRight } from "lucide-react";
+import { Navbar } from "@/components/Navbar";
+import { Footer } from "@/components/Footer";
+import apiClient from "@/lib/api-client";
+
+interface Plan {
+  id: string;
+  name: string;
+  price: number;
+  credits_included: number;
+  features: string[];
+  is_active: boolean;
+  is_recommended: boolean;
+}
 
 export default function LandingPage() {
   const { isAuthenticated } = useAuthStore();
   const router = useRouter();
-  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
-  const [authMode, setAuthMode] = useState<"login" | "signup">("login");
+  const [plans, setPlans] = useState<Plan[]>([]);
+  const [plansLoading, setPlansLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (isAuthenticated) {
       router.push("/dashboard");
     }
 
-    // Handle deep-linking to auth modals via URL query params
-    const searchParams = new URLSearchParams(window.location.search);
-    const authParam = searchParams.get("auth");
-    if (authParam === "login") {
-      setAuthMode("login");
-      setIsLoginModalOpen(true);
-    } else if (authParam === "signup") {
-      setAuthMode("signup");
-      setIsLoginModalOpen(true);
-    }
-  }, [isAuthenticated, router]);
-
-  if (isAuthenticated) {
-    return null; // Prevent flicker before redirect
-  }
-
-  const [plans, setPlans] = useState<any[]>([]);
-  const [plansLoading, setPlansLoading] = useState(true);
-
-  useEffect(() => {
     const fetchPlans = async () => {
       try {
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/v1/plans/plans`);
-        if (!response.ok) throw new Error("Failed to fetch");
-        const data = await response.json();
-        setPlans(data);
+        const response = await apiClient.get("/plans/plans");
+        setPlans(response.data);
       } catch (err) {
         console.error("Plans fetch failed:", err);
+        setError("Unable to load latest plans. Please refresh.");
       } finally {
         setPlansLoading(false);
       }
     };
     fetchPlans();
-  }, []);
+  }, [isAuthenticated, router]);
+
+  if (isAuthenticated) {
+    return null;
+  }
 
   return (
     <div className="flex flex-col min-h-screen bg-zinc-50 font-sans selection:bg-indigo-100 selection:text-indigo-900">
-      {/* Navigation */}
-      <nav className="fixed top-0 w-full z-50 bg-white/80 backdrop-blur-md border-b border-zinc-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between h-16 items-center">
-            <div className="flex items-center gap-2 text-indigo-600">
-              <Bot className="h-7 w-7" />
-              <span className="text-xl font-bold text-zinc-900 tracking-tight">udyame<span className="text-indigo-600">.ai</span></span>
-            </div>
-            <div className="hidden md:flex items-center gap-8">
-              <a href="#features" className="text-sm font-medium text-zinc-600 hover:text-indigo-600 transition-colors">Features</a>
-              <Link href="/billing" className="text-sm font-medium text-zinc-600 hover:text-indigo-600 transition-colors">Pricing</Link>
-              <button 
-                onClick={() => {
-                  setAuthMode("login");
-                  setIsLoginModalOpen(true);
-                }}
-                className="text-sm font-medium text-zinc-600 hover:text-indigo-600 transition-colors"
-              >
-                Login
-              </button>
-              <Button 
-                onClick={() => {
-                  setAuthMode("signup");
-                  setIsLoginModalOpen(true);
-                }}
-                className="bg-indigo-600 hover:bg-indigo-700 shadow-sm shadow-indigo-200"
-              >
-                Try Now
-              </Button>
-            </div>
-            <div className="md:hidden">
-              <Button variant="ghost" size="icon" className="text-zinc-600">
-                <LayoutDashboard className="h-6 w-6" />
-              </Button>
-            </div>
-          </div>
-        </div>
-      </nav>
+      <Navbar />
 
       <main className="flex-grow pt-16">
         {/* Hero Section */}
@@ -118,22 +77,15 @@ export default function LandingPage() {
               Transform raw ideas into high-fidelity business plans and strategic proposals. Driven by intelligence, polished for investors.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
-              <Button 
-                size="lg" 
-                onClick={() => {
-                  setAuthMode("signup");
-                  setIsLoginModalOpen(true);
-                }}
-                className="h-12 px-8 text-base bg-indigo-600 hover:bg-indigo-700 shadow-lg shadow-indigo-200 group"
-              >
-                <>
+              <Link href="/register">
+                <Button size="lg" className="h-12 px-8 text-base bg-indigo-600 hover:bg-indigo-700 shadow-lg shadow-indigo-200 group">
                   Start Planning Free
                   <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
-                </>
-              </Button>
+                </Button>
+              </Link>
               <Button size="lg" variant="outline" render={(props: React.HTMLAttributes<HTMLAnchorElement>) => <a {...props} href="#features" />} className="h-12 px-8 text-base bg-white">
-                    Explore Capabilities
-                  </Button>
+                Explore Capabilities
+              </Button>
             </div>
           </div>
         </section>
@@ -192,8 +144,14 @@ export default function LandingPage() {
             </div>
             
             {plansLoading ? (
-              <div className="flex justify-center py-10">
+              <div className="flex flex-col items-center justify-center py-20 space-y-4">
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+                <p className="text-zinc-500 text-sm animate-pulse">Synchronizing architectural plans...</p>
+              </div>
+            ) : error ? (
+              <div className="max-w-md mx-auto p-6 bg-white rounded-xl border border-zinc-200 text-center shadow-sm">
+                <p className="text-red-600 font-medium mb-4">{error}</p>
+                <Button onClick={() => window.location.reload()} variant="outline">Try Again</Button>
               </div>
             ) : (
               <div className={`grid grid-cols-1 gap-8 ${plans.length === 1 ? 'max-w-md mx-auto' : plans.length === 2 ? 'md:grid-cols-2 max-w-4xl mx-auto' : 'md:grid-cols-3'}`}>
@@ -216,21 +174,19 @@ export default function LandingPage() {
                         {tier.features.map((feature: string) => (
                           <li key={feature} className="flex items-start gap-3 text-sm text-zinc-600">
                             <CheckCircle2 className="h-5 w-5 text-indigo-500 flex-shrink-0" />
-                            {feature}
+                            <span className="leading-tight">{feature}</span>
                           </li>
                         ))}
                       </ul>
                     </CardContent>
                     <div className="p-6 pt-0">
-                      <Button 
-                        onClick={() => {
-                          setAuthMode("signup");
-                          setIsLoginModalOpen(true);
-                        }}
-                        className={`w-full h-11 font-bold ${tier.is_recommended ? 'bg-indigo-600 hover:bg-indigo-700 shadow-md shadow-indigo-100' : 'bg-zinc-900 hover:bg-zinc-800'}`}
-                      >
-                        Get Started
-                      </Button>
+                      <Link href="/billing">
+                        <Button 
+                          className={`w-full h-11 font-bold ${tier.is_recommended ? 'bg-indigo-600 hover:bg-indigo-700 shadow-md shadow-indigo-100' : 'bg-zinc-900 hover:bg-zinc-800'}`}
+                        >
+                          Select {tier.name}
+                        </Button>
+                      </Link>
                     </div>
                   </Card>
                 ))}
@@ -239,35 +195,14 @@ export default function LandingPage() {
             
             <div className="mt-12 text-center">
               <Link href="/billing" className="text-sm font-semibold text-indigo-600 hover:text-indigo-700 flex items-center justify-center gap-2">
-                View detailed plan comparison <ArrowRight className="h-4 w-4" />
+                Detailed comparison & features <ArrowRight className="h-4 w-4" />
               </Link>
             </div>
           </div>
         </section>
       </main>
 
-      <footer className="bg-white border-t border-zinc-200 py-12 px-4">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-8">
-          <div className="flex items-center gap-2">
-            <Bot className="h-6 w-6 text-indigo-600" />
-            <span className="text-lg font-bold text-zinc-900">Udyame AI</span>
-          </div>
-          <div className="flex items-center gap-8 text-sm text-zinc-500 font-medium">
-            <a href="#" className="hover:text-indigo-600 transition-colors">Privacy Policy</a>
-            <a href="#" className="hover:text-indigo-600 transition-colors">Terms of Service</a>
-            <a href="#" className="hover:text-indigo-600 transition-colors">Contact</a>
-          </div>
-          <p className="text-sm text-zinc-400">
-            © {new Date().getFullYear()} Udyame AI. All rights reserved.
-          </p>
-        </div>
-      </footer>
-
-      <LoginModal 
-        isOpen={isLoginModalOpen} 
-        onClose={() => setIsLoginModalOpen(false)} 
-        initialMode={authMode}
-      />
+      <Footer />
     </div>
   );
 }
