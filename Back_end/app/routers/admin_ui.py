@@ -7,8 +7,11 @@ from app.db.session import get_db
 from app.models.all_models import User, QuestionBank, AIModel, CreditLedger
 
 # Setup templates
+# __file__ is Back_end/app/routers/admin_ui.py
+# dirname(__file__) is Back_end/app/routers
+# dirname(dirname(__file__)) is Back_end/app
 base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-templates = Jinja2Templates(directory=os.path.join(base_dir, "app", "templates"))
+templates = Jinja2Templates(directory=os.path.join(base_dir, "templates"))
 
 router = APIRouter()
 

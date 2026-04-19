@@ -1,0 +1,59 @@
+graph TD
+    User["User"] -->|"Browser Request"| App["Next.js App"]
+
+    subgraph "Frontend Architecture"
+        App --> Router["App Router"]
+        Router --> Dashboard["/dashboard"]
+        Router --> Planning["/planning"]
+        Router --> Workspace["/workspace"]
+        Router --> Admin["/admin"]
+        Router --> Billing["/billing"]
+
+        subgraph "State & Data Layer"
+            UIState["Zustand Store\nUI State, Theme, Sidebar"]
+            ServerState["React Query\nServer Cache, Mutations"]
+        end
+
+        subgraph "Component Layer"
+            Chat["Chat Interface\nQ&A, Streaming, Self-Learn Feedback"]
+            AdminQueue["Admin Panel\nQuestion Queue, Model Registry"]
+            DocLib["Document Library\nGrid/List, Preview, Export"]
+            Paywall["Billing & Plans\nComparison, Checkout, Usage"]
+            CompanySelector["Company Workspace\nSidebar Nav, Smart Assistant"]
+        end
+
+        subgraph "Service & Network Layer"
+            APIClient["Axios API Client"]
+            Interceptors["Auth Interceptors\nJWT Refresh, 401 Retry"]
+            WSClient["WebSocket Client\nStreaming, Progress"]
+            Forms["React Hook Form\nValidation, Multi-step Wizard"]
+        end
+
+        Dashboard --> UIState
+        Dashboard --> CompanySelector
+        Workspace --> CompanySelector
+        Planning --> Chat
+        Admin --> AdminQueue
+        Billing --> Paywall
+
+        Dashboard --> ServerState
+        Planning --> ServerState
+        Workspace --> ServerState
+        Admin --> ServerState
+        Billing --> ServerState
+
+        Chat -->|"Form Submission"| Forms
+        AdminQueue -->|"CRUD Operations"| APIClient
+        Paywall -->|"Payment Flow"| APIClient
+        CompanySelector -->|"Company Switch"| ServerState
+        DocLib -->|"Download/Preview"| APIClient
+        Forms -->|"Validated Payload"| APIClient
+
+        APIClient --> Interceptors
+        Interceptors -->|"Real-time Events"| WSClient
+        Interceptors -->|"Cache Invalidation"| ServerState
+
+        WSClient -->|"Stream Updates"| UIState
+        ServerState -->|"Hydrate Components"| UIState
+        UIState -->|"Re-render Trigger"| Router
+    end

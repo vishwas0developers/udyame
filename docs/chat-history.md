@@ -7,7 +7,7 @@
 ### 📋 Project Context & Memory Values for "AI Business Architect Tool"
 
 **1. Project Goal:**
-Create an all-in-one AI Agent Tool named **"Udyame AI"** that serves entrepreneurs in two main capacities:
+Create an all-in-one AI Agent Tool named **"BizArchitect AI"** that serves entrepreneurs in two main capacities:
 *   **Business Management:** From ideation to running business diagnostics.
 *   **Proposal Creation:** From client discovery to closing deals.
 
@@ -36,7 +36,7 @@ Create an all-in-one AI Agent Tool named **"Udyame AI"** that serves entrepreneu
 *   **Key Feature:** "Context-Aware Memory" (Tool remembers business details to avoid repetitive questions).
 
 **6. Base Prompt Structure (For Agent Initialization):**
-*   **Role:** Udyame AI (Expert Strategist & Proposal Writer).
+*   **Role:** BizArchitect AI (Expert Strategist & Proposal Writer).
 *   **Initial Action:** Ask 5 Critical Questions (Idea, Audience, Goal, Budget, Region).
 *   **Process:** Generate Outline -> User Approval -> Generate Full Document.
 *   **Tone:** Adaptable (Investor Formal vs. Client Persuasive).
@@ -53,13 +53,13 @@ Create an all-in-one AI Agent Tool named **"Udyame AI"** that serves entrepreneu
 ---
 
 **Instructions for New Chat:**
-*"Use the above 'Project Context & Memory Values' as the foundational knowledge base. We are building 'Udyame AI'. Start by designing the detailed system prompt for the 'Intent Classification Engine' that decides whether a user needs Business Planning or Proposal Creation."*
+*"Use the above 'Project Context & Memory Values' as the foundational knowledge base. We are building 'BizArchitect AI'. Start by designing the detailed system prompt for the 'Intent Classification Engine' that decides whether a user needs Business Planning or Proposal Creation."*
 ------------------
 
 इसे याद रखो हम इसके अधर पर आगे चर्चा करेंगे या डिस्केशन करेंगे
 
 ### ASSISTANT
-✅ **Context Saved: Udyame AI Project**
+✅ **Context Saved: BizArchitect AI Project**
 
 मैंने आपके द्वारा प्रदान किए गए सभी **Project Context & Memory Values** को सफलतापूर्वक प्रोसेस कर लिया है। अब हम इसी फाउंडेशन पर आगे बढ़ेंगे।
 
@@ -70,9 +70,9 @@ Create an all-in-one AI Agent Tool named **"Udyame AI"** that serves entrepreneu
 ## 🎯 Intent Classification Engine - System Prompt v1.0
 
 ```markdown
-# SYSTEM ROLE: Intent Classifier for Udyame AI
+# SYSTEM ROLE: Intent Classifier for BizArchitect AI
 
-You are the **Intent Classification Engine** for Udyame AI. Your sole purpose is to analyze user input and route it to the correct module:
+You are the **Intent Classification Engine** for BizArchitect AI. Your sole purpose is to analyze user input and route it to the correct module:
 
 ## 📦 MODULE ROUTING OPTIONS:
 1. `BUSINESS_MANAGEMENT` → Module 1: Ideation, Planning, Operations, Diagnostics
@@ -194,7 +194,7 @@ https://github.com/paperclipai/paperclip के बारे में आप �
 
 > 💡 **सीधा मतलब**: अगर OpenClaw/Claude Code एक "कर्मचारी" है, तो Paperclip वो "कंपनी" है जो उन्हें मैनेज करती है।
 
-आपके **Udyame AI** प्रोजेक्ट के साथ इसका रिलेवेंस: Paperclip का ऑर्केस्ट्रेशन लॉजिक और "Goal-Agent" आर्किटेक्चर आपके टूल के मॉड्यूलर डिज़ाइन के लिए इंस्पिरेशन हो सकता है। 🚀
+आपके **BizArchitect AI** प्रोजेक्ट के साथ इसका रिलेवेंस: Paperclip का ऑर्केस्ट्रेशन लॉजिक और "Goal-Agent" आर्किटेक्चर आपके टूल के मॉड्यूलर डिज़ाइन के लिए इंस्पिरेशन हो सकता है। 🚀
 
 ### USER
 क्योंना हम एक complete नय प्रॉजेक्ट क्रियेट करने के बजाएं इसी प्रॉजेक्ट को source code को completely जरुत के और नए requirements के अनुसार modify करें क्या ऐसा करना सही रहेगा या सुरुआत से नया tool क्रियेट करना सही रहेगा हमारे actual requirement के आधार पर बताओ short में
@@ -204,7 +204,7 @@ https://github.com/paperclipai/paperclip के बारे में आप �
 
 **क्यों? (3 मुख्य कारण):**
 
-| पहलू | Paperclip (Existing) | Udyame AI (Your Need) |
+| पहलू | Paperclip (Existing) | BizArchitect AI (Your Need) |
 |------|---------------------|-----------------------------|
 | **Purpose** | Multi-Agent Orchestration (Autonomous Companies) | Guided Business Workflows (Entrepreneur Assistant) |
 | **Complexity** | High (Heartbeats, Governance, Multi-tenant) | Focused (Planning + Proposal Pipelines) |
@@ -232,7 +232,7 @@ https://github.com/paperclipai/paperclip के बारे में आप �
 इसी परकार इस company में हम business proposals भी create कर सकेंगे दूसरे लोगों के लिए जैसे हम एक चोटी company को एक चोटे शेहर से दूसरे शेहर पे franchise के दुआरा किसी को देना चाहते हैं तो proposal के मदद से किसी को कम समझाना या मनाने में मदद कर सकता है ताकि funds लेकर उन्हें franchise दे सके या उन्हें हम सामिल कर सके हमारे business में
 
 ### ASSISTANT
-🎯 **Udyame AI - Architecture & UI Discussion**
+🎯 **BizArchitect AI - Architecture & UI Discussion**
 
 आपका विज़न बिल्कुल क्लियर है: **"One Company → One Master Internal Planning → Multiple Derived Outputs"**
 
@@ -597,7 +597,7 @@ UI Mockup for Conversational Q&A Interface?
 इन सभी चीजों के आनार पर आगे किस सभी चीज़ यह आइडियली फीचर्स एड़ करो डीटियल्स में
 
 ### ASSISTANT
-✅ **Final Decision: Udyame AI - Complete Architecture Blueprint**
+✅ **Final Decision: BizArchitect AI - Complete Architecture Blueprint**
 
 आपने जो 4 ऑप्शन्स और 4 क्रिटिकल टेक्निकल रिक्वायरमेंट्स दिए हैं, मैंने सभी पर **आदर्श (Ideal) डिज़ाइसन्स** ले लिए हैं। यह ब्लूप्रिंट आपके टूल के लिए "Production-Ready Foundation" होगा।
 
@@ -692,7 +692,7 @@ UI Mockup for Conversational Q&A Interface?
 
 ```
 📄 [DOCUMENT TITLE]
-Generated by Udyame AI | [Company Name] | [Date]
+Generated by BizArchitect AI | [Company Name] | [Date]
 
 ─────────────────────────────────
 🔹 SECTION 1: EXECUTIVE SUMMARY (1 Page Max)
@@ -756,7 +756,7 @@ Generated by Udyame AI | [Company Name] | [Date]
 
 ```
 ┌─────────────────────────────────────────────┐
-│ 🤖 Udyame AI | Internal Planning      │
+│ 🤖 BizArchitect AI | Internal Planning      │
 ├─────────────────────────────────────────────┤
 │                                             │
 │  [CHAT PANEL - Left 70%]                    │
@@ -1138,7 +1138,7 @@ PHASE 3 (Scale - 10 Weeks)
 ## 📦 5. Project Structure (Monorepo Ready)
 
 ```
-Udyame-ai/
+bizarchitect-ai/
 ├── apps/
 │   ├── web/                 # Next.js (User SaaS UI)
 │   ├── admin/               # Next.js (Backend Admin Dashboard)
@@ -1280,7 +1280,7 @@ CREATE POLICY planning_isolation ON internal_plannings FOR ALL USING (
 
 ```yaml
 openapi: 3.0.3
-info: {title: "Udyame AI Backend", version: "1.0.0"}
+info: {title: "BizArchitect AI Backend", version: "1.0.0"}
 paths:
   /api/v1/planning/start:
     post:
@@ -1556,7 +1556,7 @@ CREDIT_WARNING_THRESHOLD=10.00
 **`Front_end/.env.local`**
 ```env
 NEXT_PUBLIC_API_URL=http://localhost:8000
-NEXT_PUBLIC_APP_NAME=Udyame AI (udyame)
+NEXT_PUBLIC_APP_NAME=BizArchitect AI (udyame)
 ```
 
 ---
@@ -1582,3 +1582,568 @@ NEXT_PUBLIC_APP_NAME=Udyame AI (udyame)
 4.  **`RAG Pipeline`**: `rag_service.py` with embedding, vector search, LiteLLM routing, guardrail filter
 
 बताइए: **किस फाइल/मॉड्यूल का कोड पहले चाहिए?** मैं production-ready, copy-paste executable code दे दूंगा। 🛠️
+
+### USER
+Considering all discussions, provide the following:
+
+1. Back-end PRD and Front-end PRD without any extra text or sample code
+2. Back-end and Front-end architecture only as workflow diagram roadmaps, without any extra text
+3. For both back-end and front-end design, create separate individual prompts for each page and workflow
+
+Ensure that there are a total of six files in six separate blocks for back-end and front-end, each with complete details, without any extra text or additional requirements inside them.
+
+
+### ASSISTANT
+```
+# FILE 1: BACK_END_PRD.md
+
+# PRODUCT REQUIREMENTS DOCUMENT: BACK-END (BizArchitect AI)
+
+## 1. OVERVIEW
+High-performance, multi-tenant SaaS back-end for AI-driven business planning, proposal generation, and dynamic question routing. Built on FastAPI, PostgreSQL, Redis, and LiteLLM proxy.
+
+## 2. CORE OBJECTIVES
+- Enable zero-data-loss conversational planning with persistent memory.
+- Route queries dynamically across multiple AI providers based on cost, latency, and subscription tier.
+- Enforce strict credit consumption, usage limits, and subscription gating.
+- Provide admin-controlled approval workflows for AI-generated self-learning questions.
+- Ensure PII protection, DPDP compliance, and output guardrails.
+
+## 3. FUNCTIONAL REQUIREMENTS
+### 3.1 Authentication & Multi-Tenancy
+- JWT-based stateless auth with RBAC (user, admin, superadmin).
+- Row-Level Security (RLS) isolating company data per user.
+- Subscription tier validation on every authenticated request.
+
+### 3.2 Company & Internal Planning Engine
+- Single master internal planning per company (locked post-completion).
+- Persistent JSONB storage for 10 permanent + dynamic contextual answers.
+- Versioning system for master profile amendments.
+
+### 3.3 Dynamic Question & Self-Learning System
+- Question bank with categories: PERMANENT, CONTEXTUAL, SELF_LEARNED.
+- AI-generated questions enter PENDING state requiring admin approval.
+- Approval threshold: 5+ positive user feedback signals OR direct admin override.
+- Approved questions instantly available via vector search routing.
+
+### 3.4 AI Model Router
+- Dynamic registration of providers (OpenAI, Gemini, Qwen, Groq, custom endpoints).
+- Hot-swappable configuration without backend restart.
+- Fallback chain based on priority, health status, and credit cost.
+- LiteLLM proxy integration for unified OpenAI-compatible routing.
+
+### 3.5 Credit & Subscription Management
+- Token-based credit deduction (input + output tokens × model rate).
+- Hard block on credit exhaustion with graceful 402 responses.
+- Auto-refresh logic tied to subscription billing cycle.
+- Immutable credit ledger for audit and reconciliation.
+
+### 3.6 RAG & Context Pipeline
+- Multilingual embedding (multilingual-e5-large) stored in pgvector.
+- Retrieval from company profiles, approved questions, compliance rules.
+- Context chunking and semantic reranking before LLM injection.
+- Cached retrieval results via Redis for repeated queries.
+
+### 3.7 Document Generation
+- Structured markdown/PDF generation from conversational output.
+- Template engine for Business Plans, Proposals, DPRs, Pitch Decks.
+- India-specific compliance auto-injection based on region/industry.
+
+### 3.8 Admin Approval Workflow
+- Endpoints for pending queue retrieval, approve/reject/edit actions.
+- Bulk action support and audit logging for all moderation actions.
+- Role-based access control for content moderators vs superadmins.
+
+### 3.9 Guard Rails & Security
+- Regex + NER-based PII detection and auto-redaction before LLM call.
+- Output validation for compliance hallucination prevention.
+- TLS 1.3 in transit, AES-256 at rest, encrypted API keys in vault.
+
+## 4. NON-FUNCTIONAL REQUIREMENTS
+- Latency: <800ms for API routing, <20ms for vector search.
+- Scalability: Async architecture supporting 5k concurrent sessions.
+- Reliability: Circuit breakers for AI providers, Redis-backed retries.
+- Observability: LangSmith tracing, Sentry error tracking, Prometheus metrics.
+- Compliance: DPDP India ready, GDPR export/delete endpoints, consent logging.
+
+## 5. DATABASE & STORAGE STRATEGY
+- Primary: PostgreSQL 16 + pgvector extension for relational + semantic data.
+- Cache/State: Redis 7 for sessions, credit locks, rate limiting, RAG cache.
+- Object Storage: MinIO/S3 for exported documents, templates, audit snapshots.
+- Data Isolation: Strict RLS, logical tenant namespaces, presigned URL access.
+
+## 6. API DESIGN PRINCIPLES
+- RESTful + WebSocket for live chat streaming.
+- Pydantic validation on all inputs/outputs.
+- Idempotency keys for credit transactions and document generation.
+- Pagination, filtering, and sorting for admin queues and document lists.
+
+## 7. DEPLOYMENT & DEVOPS
+- Containerized via Docker Compose (App, Postgres, Redis, MinIO).
+- CI/CD via GitHub Actions with automated Alembic migrations.
+- Health checks, graceful shutdown, zero-downtime rolling updates.
+- Environment-driven config (.env) with secret rotation policies.
+```
+
+```
+# FILE 2: FRONT_END_PRD.md
+
+# PRODUCT REQUIREMENTS DOCUMENT: FRONT-END (BizArchitect AI)
+
+## 1. OVERVIEW
+Next.js 14+ SaaS application delivering a conversational business architect interface, admin moderation dashboard, credit management, and document export workflows. Built with React, TypeScript, TailwindCSS, and Shadcn UI.
+
+## 2. CORE OBJECTIVES
+- Provide a frictionless, step-by-step conversational UX for business planning.
+- Enable seamless switching between planning modes, proposal generation, and document review.
+- Offer a transparent, real-time credit and subscription management interface.
+- Deliver an intuitive admin panel for question moderation, AI model configuration, and system monitoring.
+- Ensure full responsiveness, accessibility (WCAG 2.1), and PWA readiness.
+
+## 3. FUNCTIONAL REQUIREMENTS
+### 3.1 Authentication & Routing
+- NextAuth/Clerk integration for email/password, OAuth, and SSO.
+- Route guards for subscription tiers, credit limits, and role-based access.
+- Persistent login state with auto-redirect to last active workspace.
+
+### 3.2 User Dashboard
+- Company selector with quick-access tiles (Planning, Proposals, Diagnostics, Documents).
+- Real-time progress tracker for active planning sessions.
+- Credit balance indicator with warning thresholds and upgrade prompts.
+- Recent activity feed and document version history.
+
+### 3.3 Conversational Planning Interface
+- Chat-based UI with AI prompts, answer fields, and dynamic question injection.
+- Context sidebar showing live master profile population and AI suggestions.
+- Streaming response support with typing indicators and pause/resume controls.
+- Inline editing of previous answers with version diff visualization.
+
+### 3.4 Document Library & Export
+- Grid/list view of generated plans, proposals, DPRs, and pitch decks.
+- Preview modal with format toggle (Markdown, PDF, Excel, PPT).
+- One-click download with branded templates and watermark options.
+- Metadata tagging (industry, date, status, credit cost).
+
+### 3.5 Billing & Credit Management
+- Plan comparison table with feature matrices and credit allocations.
+- Secure checkout via Razorpay/Stripe with webhook sync indicators.
+- Credit usage breakdown by session, model, and document type.
+- Auto-refresh countdown and manual top-up interface.
+
+### 3.6 Admin Dashboard
+- Role-gated access for moderators and superadmins.
+- Pending question queue with bulk approve/reject/edit actions.
+- AI model registry with provider dropdowns, endpoint testing, and cost calculators.
+- System metrics panel (API latency, error rates, active sessions, credit burn).
+
+### 3.7 State & Data Management
+- React Query for server-state caching, refetching, and background sync.
+- Zustand for client-state (chat history, UI preferences, credit status).
+- Optimistic UI updates with rollback on API failure.
+- Form validation via Zod + React Hook Form.
+
+## 4. UI/UX GUIDELINES
+- Clean, minimalist SaaS aesthetic with high contrast and readable typography.
+- Consistent iconography (Lucide React) and micro-interactions for loading states.
+- Hinglish/English toggle for AI responses and UI labels.
+- Keyboard navigation support and screen reader compatibility.
+
+## 5. ROUTING STRUCTURE
+- / → Landing & Pricing
+- /auth/* → Login, Register, Forgot Password
+- /dashboard → Company overview, quick actions, recent docs
+- /planning/[sessionId] → Conversational interface with sidebar
+- /documents/[docId] → Viewer, editor, export controls
+- /billing → Subscription, invoices, credit ledger
+- /admin → Dashboard, question queue, model config, system logs
+
+## 6. PERFORMANCE TARGETS
+- LCP < 1.5s, TTI < 2s on 4G networks.
+- Code-splitting per route, dynamic imports for heavy UI components.
+- Image optimization and font self-hosting.
+- API request batching and debounced search inputs.
+```
+
+```
+# FILE 3: BACK_END_ARCHITECTURE_WORKFLOW.md
+
+CLIENT REQUEST (HTTP/WebSocket)
+  ↓
+FASTAPI API GATEWAY & MIDDLEWARE STACK
+  ├─ CORS Validation
+  ├─ JWT Auth & RBAC Check
+  ├─ Request Validation (Pydantic)
+  └─ Rate Limiting (Redis)
+  ↓
+CREDIT & SUBSCRIPTION GATE
+  ├─ Fetch user.credit_balance & plan_limit
+  ├─ Deduct estimated token cost (Redis Lock)
+  ├─ Fail if balance <= 0 → Return 402 + Upgrade Prompt
+  └─ Pass → Continue
+  ↓
+INTENT & QUESTION ROUTER
+  ├─ Classify: Planning / Proposal / Admin / General
+  ├─ Load company core_data + session context
+  └─ Select question from PERMANENT / CONTEXTUAL / APPROVED_SELF_LEARNED
+  ↓
+RAG RETRIEVAL PIPELINE
+  ├─ Embed user query (multilingual-e5-large)
+  ├─ Vector Search in pgvector (company_profiles, question_bank, compliance_rules)
+  ├─ Rerank top-3 chunks
+  └─ Cache result in Redis (TTL 15m)
+  ↓
+AI MODEL ROUTER (LiteLLM Proxy)
+  ├─ Fetch active ai_models by fallback_priority
+  ├─ Construct prompt: System + Context + Guardrails + User Input
+  ├─ Async LLM call with streaming support
+  └─ Fallback to next model on timeout/error
+  ↓
+GUARD RAIL & OUTPUT FILTER
+  ├─ PII Scan & Redact (PAN, Aadhaar, Bank, Phone)
+  ├─ Compliance Check (Flag illegal/financial advice)
+  ├─ Hallucination Guard (Cross-verify with retrieved chunks)
+  └─ Pass/Fail → If fail, retry or return safe response
+  ↓
+RESPONSE & POST-PROCESSING
+  ├─ Stream to client (SSE/WebSocket)
+  ├─ Deduct actual token cost → Update credit_ledger
+  ├─ Save answer to internal_plannings JSONB
+  ├─ If self-learning triggered → Queue to question_bank (PENDING)
+  └─ Log metrics to LangSmith/Prometheus
+  ↓
+ADMIN APPROVAL LOOP (Async)
+  ├─ Moderator reviews PENDING questions
+  ├─ Approve → Status: ACTIVE → Instantly routed
+  ├─ Reject → Status: ARCHIVED → Removed from flow
+  └─ Audit log recorded
+```
+
+```
+# FILE 4: FRONT_END_ARCHITECTURE_WORKFLOW.md
+
+USER ENTRY → LANDING / AUTH PAGE
+  ↓
+NEXTAUTH/Clerk SESSION INIT
+  ├─ Validate JWT
+  ├─ Fetch subscription_tier + credit_balance
+  └─ Route to /dashboard
+  ↓
+DASHBOARD RENDER
+  ├─ Fetch company list via React Query
+  ├─ Display credit badge + usage meter
+  └─ Show quick-action tiles + recent documents
+  ↓
+PLANNING SESSION INIT (/planning/[id])
+  ├─ API: POST /planning/start → Get session_id + first_question
+  ├─ Init Zustand chat state + progress tracker
+  └─ Render Conversational UI + Context Sidebar
+  ↓
+CONVERSATIONAL LOOP
+  ├─ User submits answer → API: POST /planning/answer
+  ├─ Loading state + typing indicator
+  ├─ Stream response → Append to chat history
+  ├─ Update sidebar context live
+  ├─ Prompt feedback: "Was this helpful? ✅/❌"
+  └─ Check completion → Trigger document generation prompt
+  ↓
+CREDIT & BILLING SYNC
+  ├─ Real-time credit deduction via WebSocket/Query refetch
+  ├─ Warning toast if < threshold
+  ├─ Hard stop UI if exhausted → Redirect to /billing
+  └─ Plan upgrade / top-up flow → Razorpay/Stripe checkout → Webhook sync
+  ↓
+DOCUMENT GENERATION & EXPORT
+  ├─ API: POST /generate/document → Return presigned URL
+  ├─ Render preview modal (PDF/Excel/PPT toggle)
+  ├─ Apply template formatting + India compliance badges
+  └─ Download / Save to /documents library
+  ↓
+ADMIN WORKFLOW (/admin/*)
+  ├─ Poll /admin/questions/pending → Render queue table
+  ├─ Action buttons → API: PATCH approve/reject → Optimistic UI update
+  ├─ AI Model config → Add/Edit provider → Test endpoint → Save
+  └─ System metrics panel → Auto-refresh graphs
+  ↓
+ERROR & FALLBACK HANDLING
+  ├─ API failure → Toast error + retry button
+  ├─ Network drop → Offline queue + auto-sync on reconnect
+  └─ Credit lock → Graceful downgrade UI with clear CTA
+```
+
+```
+# FILE 5: BACK_END_GENERATION_PROMPTS.md
+
+PROMPT 1: AUTH & MULTI-TENANT SETUP
+"Generate a FastAPI authentication module with JWT issuance, refresh tokens, and RBAC decorators. Implement PostgreSQL Row-Level Security (RLS) for company-level isolation. Include middleware for tenant extraction from auth context. Use SQLAlchemy 2.0 async, Pydantic for schemas, and bcrypt for password hashing. Ensure stateless design with configurable token expiry and secure cookie options for production."
+
+PROMPT 2: DATABASE SCHEMA & MIGRATIONS
+"Write complete SQLAlchemy 2.0 models for: users, companies, internal_plannings, question_bank, ai_models, credit_ledger, documents. Include pgvector column for embeddings, JSONB for core planning data, and ENUMs for statuses. Generate Alembic migration script with proper indexes (GIN, BRIN), RLS policies, and foreign key constraints. Ensure async-compatible session factory and connection pooling."
+
+PROMPT 3: FASTAPI BASE & MIDDLEWARE STACK
+"Create FastAPI app entrypoint with lifespan context managers for PostgreSQL, Redis, and MinIO initialization. Implement middleware for CORS, request logging, rate limiting (Redis sliding window), and global exception handling. Configure OpenAPI docs with security schemes, versioning, and Pydantic validation errors formatted to RFC 7807. Enable async request lifecycle and graceful shutdown hooks."
+
+PROMPT 4: CREDIT SYSTEM & SUBSCRIPTION LOGIC
+"Build a credit management service with token-based deduction (input+output × model rate), Redis distributed locks for concurrency safety, and an immutable PostgreSQL ledger. Implement auto-refresh logic tied to billing cycle dates. Add middleware that checks balance before routing to AI services, returns 402 on exhaustion, and logs all transactions with reference IDs. Include plan tier validation and usage quota enforcement."
+
+PROMPT 5: AI MODEL ROUTER & LITELLM INTEGRATION
+"Develop an AI routing service using LiteLLM proxy that reads active models from ai_models table at runtime. Implement fallback chain based on priority, health checks, and cost limits. Add dynamic model registration endpoints (create/update/disable) without server restart. Include streaming SSE support, timeout handling, retry logic, and unified response formatting. Store per-call metadata in credit ledger."
+
+PROMPT 6: RAG PIPELINE & VECTOR SEARCH
+"Implement a RAG service using multilingual-e5-large embeddings stored in pgvector. Create retrieval logic that chunks user queries, searches company_profiles, approved_question_bank, and compliance_rules, reranks top-3 results, and returns formatted context. Add Redis caching with TTL for repeated queries. Ensure async execution, fallback to text-only search if vector index fails, and integrate with LiteLLM prompt construction."
+
+PROMPT 7: ADMIN APPROVAL WORKFLOW API
+"Create REST endpoints for admin question moderation: GET pending queue (paginated, filterable), PATCH approve/reject/edit with audit logging, bulk action support, and role-based access (superadmin/moderator). Update question_bank status from PENDING to ACTIVE/ARCHIVED instantly. Include validation for edit payloads, prevent race conditions via optimistic locking, and return updated counts for UI polling."
+
+PROMPT 8: GUARD RAIL & PII SCANNER SERVICE
+"Build a pre/post LLM processing service that scans text using regex and NER for Indian PII (PAN, Aadhaar, GST, phone, email, bank). Implement auto-redaction, user notification flags, and compliance rule checks. Add hallucination guard that cross-references LLM output with RAG context chunks. Return structured safety scores and block generation if threshold breached. Log all guard rail triggers to audit table."
+
+PROMPT 9: DOCUMENT GENERATION SERVICE
+"Create a document generation service that converts conversational JSONB outputs into structured templates (Business Plan, Proposal, DPR, Pitch Deck). Support markdown, PDF (WeasyPrint/Playwright), and Excel export. Inject India-specific compliance checklists based on region/industry. Add presigned MinIO URL generation for downloads, versioning, and metadata tagging. Ensure async rendering with progress tracking."
+```
+
+```
+# FILE 6: FRONT_END_GENERATION_PROMPTS.md
+
+PROMPT 1: LANDING & AUTH PAGES
+"Build Next.js 14 app router pages for landing, pricing, and authentication (/auth/login, /auth/register, /auth/forgot). Implement NextAuth/Clerk session handling with secure redirects, protected routes, and subscription tier gating. Create responsive UI with Tailwind + Shadcn, form validation via Zod, and loading skeletons. Ensure SEO meta tags, OpenGraph previews, and PWA manifest setup."
+
+PROMPT 2: USER DASHBOARD LAYOUT & NAVIGATION
+"Develop /dashboard page with persistent sidebar navigation, top header (user profile, credit badge, notifications), and main content grid. Use React Query to fetch company list, recent documents, and active sessions. Implement quick-action tiles, progress rings, and state-aware routing. Ensure keyboard navigation, responsive breakpoints, and Zustand for UI preferences (theme, layout, Hinglish toggle)."
+
+PROMPT 3: CONVERSATIONAL PLANNING INTERFACE
+"Create /planning/[sessionId] page with chat-based UI, streaming message rendering, and dynamic question injection. Implement React Hook Form + Zod for answer submission, inline edit mode with version diff, and AI suggestion sidebar showing live context population. Add typing indicators, pause/resume controls, and optimistic updates. Use WebSocket/SSE for real-time LLM streaming and credit deduction display."
+
+PROMPT 4: DOCUMENT LIBRARY & VIEWER/EXPORT
+"Build /documents page with grid/list toggle, metadata filtering, and search. Implement preview modal supporting PDF, Excel, PPT, and markdown rendering via react-pdf and xlsx libraries. Add export controls with template selection, watermark toggles, and presigned URL downloads. Use React Query for pagination, Zustand for download queue state, and toast notifications for completion/errors."
+
+PROMPT 5: BILLING & CREDIT MANAGEMENT UI
+"Develop /billing page with plan comparison table, feature matrices, and credit allocation display. Integrate Razorpay/Stripe checkout modals with webhook sync indicators and loading states. Create credit usage breakdown charts by session/model/type, auto-refresh countdown timer, and manual top-up form. Implement error boundaries for payment failures, success redirects, and ledger history table with pagination."
+
+PROMPT 6: ADMIN DASHBOARD & QUESTION APPROVAL QUEUE
+"Build /admin layout with role-gated access, sidebar navigation, and main content area. Create /admin/queue page with paginated table of pending questions, bulk select, approve/reject/edit modals, and optimistic UI updates. Add filtering by industry, confidence, and date. Implement toast confirmations, audit log viewer, and real-time polling via React Query. Ensure RBAC checks and fallback UI for unauthorized access."
+
+PROMPT 7: AI MODEL CONFIGURATION PANEL
+"Create /admin/models page with model registry table, provider dropdowns (OpenAI, Gemini, Qwen, Groq, Custom), endpoint input, API key masking, and cost calculator. Add 'Test Connection' button with status indicators, fallback priority sliders, and toggle switches for active/inactive states. Implement form validation, error toast for failed tests, and React Query mutations for CRUD operations with optimistic rollback."
+
+PROMPT 8: RESPONSIVE STATE & API INTEGRATION LAYER
+"Develop centralized API client using Axios/RTK Query with interceptors for JWT attachment, error handling, and credit status checks. Implement Zustand store for global state (chat history, credit balance, UI preferences, tenant context). Add React Query wrappers for all endpoints with caching, background refetch, and pagination helpers. Ensure TypeScript strict mode, error boundary integration, and PWA offline fallback logic for non-critical routes."
+```
+
+### USER
+Generate a complete visual architecture blueprint for my project based on our previous discussion.
+
+Requirements:
+
+* Provide separate diagrams for Frontend Architecture and Backend Architecture.
+* Use a Diagram-as-Code format such as Mermaid or PlantUML so the diagrams are both visually renderable and machine-readable.
+* Ensure the diagrams clearly show components, layers, and data flow.
+* Frontend should include: UI components, state management, routing, API service layer.
+* Backend should include: API layer, controllers, services, business logic, database, and external integrations.
+* Keep the structure clean, scalable, and production-ready.
+* Output only the diagrams (no extra explanation).
+
+### ASSISTANT
+```mermaid
+graph TD
+    User[User / Browser] --> |HTTPS / WSS| App[Next.js 14 App Router]
+
+    subgraph Frontend Architecture
+        App --> Router[Route Guards & Layouts]
+        Router --> Dashboard[/Dashboard/]
+        Router --> Planning[/Planning Session/]
+        Router --> Admin[/Admin Panel/]
+        Router --> Billing[/Billing & Credits/]
+
+        subgraph State & Data Layer
+            UIState[Zustand\nUI & Local State]
+            ServerState[TanStack React Query\nAPI Cache & Sync]
+        end
+
+        subgraph Component Layer
+            Chat[Conversational UI\n+ Context Sidebar]
+            AdminQueue[Question Approval Table\n+ Model Config]
+            DocLib[Document Library\n+ Preview/Export]
+            Paywall[Plan Selector\n+ Credit Tracker]
+        end
+
+        subgraph Service & Network Layer
+            APIClient[Axios HTTP Client]
+            Interceptors[JWT Auth & Credit Check]
+            WSClient[SSE / WebSocket\nStreaming Handler]
+            Forms[React Hook Form + Zod]
+        end
+
+        Dashboard --> UIState
+        Planning --> Chat
+        Admin --> AdminQueue
+        Billing --> Paywall
+        
+        Dashboard --> ServerState
+        Planning --> ServerState
+        Admin --> ServerState
+        Billing --> ServerState
+
+        Chat --> |User Input| Forms
+        AdminQueue --> |CRUD Ops| APIClient
+        Paywall --> |Checkout Intent| APIClient
+        Forms --> |Validated Payload| APIClient
+
+        APIClient --> Interceptors
+        Interceptors --> |Stream Request| WSClient
+        Interceptors --> |Data Fetch| ServerState
+        
+        WSClient --> |Live LLM Tokens & Progress| UIState
+        ServerState --> |Sync & Update| UIState
+        UIState --> |Re-render & Route State| Router
+    end
+```
+
+```mermaid
+graph TD
+    Client[Frontend / External Apps] --> |HTTP / WS| GW[API Gateway / CORS & TLS]
+
+    subgraph Backend Architecture
+        GW --> MW[Middleware Layer\nJWT Auth, RBAC, Rate Limit, RLS Tenant]
+        MW --> Controllers[FastAPI Routers\nAuth, Planning, Admin, Credits, Docs]
+
+        Controllers --> |Route & Validate| Services[Business Logic & Services]
+
+        subgraph Core Services
+            CreditSvc[Credit Engine\nLedger, Redis Locks, Quotas]
+            AIRouter[AI Model Router\nLiteLLM, Fallback, Cost Calc]
+            RAGSvc[RAG Pipeline\nEmbedding, Vector Search, Context]
+            GuardRail[Security Filter\nPII Redaction, Compliance Check]
+            DocGen[Document Generator\nPDF/Excel/Template Engine]
+        end
+
+        Services --> CreditSvc
+        Services --> AIRouter
+        Services --> RAGSvc
+        Services --> GuardRail
+        Services --> DocGen
+
+        subgraph Data Persistence Layer
+            PG[(PostgreSQL 16\nUsers, Companies, Plans, Ledger, Models)]
+            PGVec[(pgvector Extension\nEmbeddings, HNSW/IVF Index)]
+            Redis[(Redis 7\nSessions, Cache, Distributed Locks)]
+            MinIO[(MinIO / S3\nExports, Templates, Audit Logs)]
+        end
+
+        CreditSvc --> |Read/Write Ledger & Quotas| PG
+        CreditSvc --> |Atomic Deductions| Redis
+        RAGSvc --> |Vector Search & Context| PGVec
+        RAGSvc --> |Cache Retrieval Results| Redis
+        GuardRail --> |Audit & Safety Logs| PG
+        DocGen --> |Store Binary Files| MinIO
+        DocGen --> |Save Metadata| PG
+
+        subgraph External Integrations
+            LLMs[AI Providers\nOpenAI, Gemini, Qwen, Groq]
+            Pay[Payment Gateways\nRazorpay, Stripe]
+            Email[Notification Service\nSMTP / Resend]
+        end
+
+        AIRouter --> |Async Streaming & Prompts| LLMs
+        Pay --> |Webhook Sync & Entitlements| CreditSvc
+        CreditSvc --> |Plan Activation & Alerts| Email
+        RAGSvc --> |Batch Embedding API| LLMs
+
+        LLMs --> |Token Usage Metrics| CreditSvc
+        Pay --> |Transaction Records| PG
+        Email --> |Delivery Status| PG
+        
+        DocGen --> |Presigned URL Gen| MinIO
+    end
+```
+
+### USER
+Now provide complete design PRDs for both front-end and back-end, divided page-wise into separate sections or one to two blocks. Ensure there are two blocks: one for the back-end admin panel and one for the front-end user interface. Include only design and styling details according to each page, without any extra text.
+
+### ASSISTANT
+# FRONT-END USER INTERFACE DESIGN PRD
+
+## PAGE 1: LANDING & AUTH
+- Layout: Centered auth container (max-width: 420px), full-height gradient background (slate-50 to blue-50), floating glassmorphism card with backdrop-blur-md and subtle drop-shadow.
+- Typography: Heading (Inter 24px, font-semibold, slate-900), Subtext (Inter 14px, slate-500), Input labels (13px, medium, slate-700).
+- Components: Email/password inputs (h-11, rounded-xl, border-slate-200, focus:ring-2 ring-blue-500), Submit button (full-width, h-11, bg-blue-600 hover:bg-blue-700 text-white rounded-xl transition-all), OAuth divider with line-through separators.
+- States: Loading (spinner icon inside button, disabled cursor), Error (red border, 12px text below input), Success (green checkmark toast).
+- Responsive: Mobile (stacked, full-width card with px-4), Tablet/Desktop (centered, max-w-md).
+- Micro-interactions: Button press scale-95, input focus smooth border transition, floating label animation on focus.
+
+## PAGE 2: MAIN DASHBOARD
+- Layout: 12-column responsive grid, persistent left sidebar (w-64, hidden on mobile, slide-over drawer), top header (h-16, sticky, bg-white border-b), main content area (p-6, bg-slate-50).
+- Components: Company selector (dropdown with avatar + name), Quick action tiles (4-column grid, hover:shadow-lg, hover:-translate-y-1, rounded-2xl bg-white), Recent documents list (table with status badges, pagination at bottom).
+- Credit Indicator: Pill-shaped badge (bg-amber-100 text-amber-800, progress ring SVG), tooltip on hover showing usage breakdown.
+- Typography: Section headings (18px, bold, slate-900), Card titles (15px, medium, slate-800), Meta text (12px, slate-500).
+- States: Tile hover (scale-105, ring-1 ring-slate-200), Loading skeleton (pulse animation on gray-200 placeholders), Empty state (illustration + CTA button, centered).
+- Responsive: Mobile (single column tiles, collapsible sidebar, sticky header with hamburger), Desktop (3-4 column grid, persistent sidebar).
+- Micro-interactions: Tile hover lift, badge progress animation, smooth route transition fade-in.
+
+## PAGE 3: CONVERSATIONAL PLANNING INTERFACE
+- Layout: Split pane (left 65% chat, right 35% context sidebar), chat container (flex-col-reverse, overflow-y-auto, pb-4), input area (sticky bottom, px-4 py-3 bg-white border-t).
+- Components: Message bubbles (AI: bg-slate-100 rounded-tr-2xl rounded-br-2xl rounded-tl-2xl, User: bg-blue-600 text-white rounded-tl-2xl rounded-bl-2xl rounded-tr-2xl), Context cards (border-l-4 border-blue-500 bg-blue-50/50), Feedback buttons (inline 👍/👎, hover:bg-slate-100 rounded).
+- Typography: AI messages (14px, leading-relaxed, slate-800), User messages (14px, white), Inline code (monospace bg-slate-200 px-1 py-0.5 rounded).
+- Input: Auto-growing textarea (max-h-32, resize-none, ring focus), Send button (circular, h-10 w-10 bg-blue-600 disabled:opacity-50), Attach icon (hover:bg-slate-100 rounded-full).
+- States: Streaming (typing dots animation, cursor-blink), Loading (spinner + "Thinking..." text), Error (red banner inline), Pause/Resume controls (floating pill on scroll-up).
+- Responsive: Mobile (single column, sidebar collapses to bottom sheet toggle, input fixed bottom), Desktop (split view, sidebar fixed height with internal scroll).
+- Micro-interactions: Message slide-up fade, button press scale-95, auto-scroll with smooth behavior, context panel expand/collapse accordion.
+
+## PAGE 4: DOCUMENT LIBRARY & VIEWER
+- Layout: Header with search + filter dropdowns (industry, date, status), grid/list toggle, document cards (2-col mobile, 3-col tablet, 4-col desktop), viewer modal (fixed inset, bg-black/40 backdrop-blur).
+- Components: Document card (thumbnail preview, title 14px medium, meta row with icons, status badge, download button hover:bg-blue-600), Filter chips (rounded-full border, active:bg-blue-50 active:border-blue-500 active:text-blue-700), Viewer frame (PDF.js container, toolbar top, zoom controls, page nav).
+- Typography: Titles (15px font-medium), Meta (12px slate-500), Toolbar labels (13px).
+- States: Hover (shadow-md, ring-1), Loading (skeleton grid), Empty (centered illustration + "Generate First Doc" CTA), Error (toast + retry link).
+- Responsive: Mobile (stacked filters, single column cards, viewer fullscreen), Desktop (inline filters, multi-column grid, modal 80vw max-width).
+- Micro-interactions: Card hover lift, filter chip tap bounce, modal fade-in + scale-95 to 100, download progress bar.
+
+## PAGE 5: BILLING & SUBSCRIPTION
+- Layout: Pricing section (3-card horizontal stack, middle card elevated ring-2 ring-blue-500 shadow-xl), Usage dashboard (chart area + ledger table below), Payment modal (centered, secure lock icon).
+- Components: Plan cards (bg-white rounded-2xl p-6, feature list with check icons, CTA button variant per tier), Credit meter (horizontal progress bar with segment markers, hover tooltip), Ledger table (zebra striping, sortable headers, pagination), Checkout form (card input fields with brand detection icons).
+- Typography: Plan names (20px bold, slate-900), Prices (32px font-extrabold blue-600), Feature text (14px slate-600), Table headers (12px uppercase tracking-wide slate-500).
+- States: Card hover (shadow-xl, translate-y-[-4px]), Active plan badge (bg-green-100 text-green-800 px-2 py-1 rounded), Processing (spinner + disabled inputs), Success (confetti + redirect countdown).
+- Responsive: Mobile (stacked plans, horizontal scroll for ledger, bottom sheet checkout), Desktop (inline layout, table full-width, modal side-by-side with order summary).
+- Micro-interactions: Plan toggle switch (monthly/yearly pill), progress bar fill animation, table row hover highlight, button ripple effect.
+
+---
+
+# BACK-END ADMIN PANEL DESIGN PRD
+
+## PAGE 1: ADMIN OVERVIEW & METRICS
+- Layout: Top metric cards (4-col grid, h-24, bg-white border-b-2 colored accents), main content split (left: active sessions chart 60%, right: system alerts 40%), sticky header (dark slate bg-white text, breadcrumb + role badge).
+- Components: KPI cards (icon circle left, value 28px bold, label 13px slate-500, trend arrow +/- green/red), Line chart (smooth curve, grid lines hidden, tooltip on hover, legend bottom), Alert list (border-l-4 red/amber, timestamp, dismiss icon, expand details).
+- Typography: Header (18px font-bold slate-900), Card values (28px font-semibold slate-800), Labels (12px medium slate-500), Chart axis (11px slate-400).
+- States: Loading (card skeletons + chart placeholder spin), Error (red banner with retry), Real-time update (subtle pulse dot green on KPIs), Hover (chart crosshair + tooltip fade-in).
+- Responsive: Mobile (stacked KPIs, vertical charts, collapsible alerts), Desktop (inline grid, chart side-by-side, fixed header).
+- Micro-interactions: Number count-up animation, tooltip slide-up, alert dismiss swipe/fade, KPI pulse on data refresh.
+
+## PAGE 2: QUESTION APPROVAL QUEUE
+- Layout: Full-width data table (sticky header, scrollable body), top filter bar (search input, dropdowns for industry/status, bulk action bar), pagination footer.
+- Components: Table rows (hover:bg-slate-50, border-b, checkbox left, question text 14px medium, metadata tags right), Bulk bar (sticky on scroll, bg-white shadow, approve/reject/edit buttons), Status badges (Pending: yellow bg/text, Approved: green, Rejected: red, grayed-out), Context modal (slide-over right 35%, preview AI confidence, user feedback count, approval form).
+- Typography: Headers (12px uppercase tracking-wide font-medium slate-500), Cell text (14px slate-800), Tag text (11px font-medium px-2 py-0.5 rounded-full), Button text (13px medium).
+- States: Row hover (scale-100 shadow-sm), Checkbox checked (ring-2 ring-blue-500), Bulk actions disabled until select, Loading (row shimmer), Success toast (green check + undo link).
+- Responsive: Mobile (card-based list instead of table, horizontal scroll for metadata, bottom sheet for context), Desktop (full table, inline actions, slide-over panel).
+- Micro-interactions: Checkbox ripple, row selection highlight, modal slide-in, bulk bar fade-down on select, badge transition.
+
+## PAGE 3: AI MODEL CONFIGURATION
+- Layout: Header with "Add Model" CTA, grid of model cards (3-col desktop, 2-col tablet, 1-col mobile), edit modal (centered, 2-column form layout), test console (collapsible bottom panel).
+- Components: Model card (header with provider logo, name 16px bold, toggle switch right, status dot, metrics mini-row: latency, cost/token, fallback #), Form inputs (label 13px medium, input/select h-10 rounded-lg border-slate-200, focus:ring-blue-500), Test button (outline style, loading spinner inline), Validation hints (12px red text below invalid field).
+- Typography: Card titles (15px font-semibold), Metric values (12px mono slate-600), Form labels (13px medium), Input placeholders (13px slate-400).
+- States: Card active (border-2 border-blue-500 shadow-md), Inactive (opacity-60, grayscale), Toggle on/off (smooth slide, green/gray bg), Testing (spinner + progress bar), Error (red border + shake animation), Success (green border + check toast).
+- Responsive: Mobile (stacked cards, full-width modal, bottom sheet test console), Desktop (grid layout, inline modal, collapsible test panel).
+- Micro-interactions: Toggle slide, card hover lift, test button progress fill, error field bounce, success confetti pulse.
+
+## PAGE 4: SYSTEM LOGS & AUDIT TRAIL
+- Layout: Chronological timeline view (left line, nodes right), filter sidebar (left 20%, collapsible), main feed (right 80%), export dropdown top-right.
+- Components: Timeline nodes (colored dots by severity: blue info, amber warning, red error), Event cards (timestamp 12px mono, actor 13px bold, action description 14px, metadata expand accordion), Filter pills (date range, actor, action type, severity), Export menu (CSV/JSON dropdown, loading spinner on click).
+- Typography: Timestamps (11px mono slate-500), Actor names (13px font-medium blue-600), Descriptions (14px slate-800), Metadata (12px slate-500 mono).
+- States: Hover on card (bg-slate-50, subtle left border highlight), Expanded metadata (smooth height transition, gray bg), Filter active (pill bg-blue-100 text-blue-800), Loading (timeline node pulse), Error fetching (inline banner with retry).
+- Responsive: Mobile (vertical stack, filters top horizontal scroll, compact cards), Desktop (side filter + timeline, full metadata inline).
+- Micro-interactions: Node pop on hover, accordion smooth expand, filter pill press, export progress ring.
+
+## PAGE 5: USER & CREDIT MANAGEMENT
+- Layout: Master-detail view (left: searchable user list 30%, right: detail panel 70%), top stats bar (total users, active subs, avg credit burn), bulk credit top-up modal.
+- Components: User list (avatar + name, tier badge, credit balance pill, search highlight match), Detail panel (header with status, credit chart sparkline, recent actions table, top-up form with amount input + reason textarea), Tier badges (Free: gray, Pro: blue, Business: purple, Enterprise: black), Top-up modal (secure lock icon, amount presets, notes field, confirm button).
+- Typography: User names (14px font-medium), Badges (11px uppercase px-2 py-0.5 rounded), Panel headings (16px bold slate-900), Table cells (13px slate-700).
+- States: List item selected (bg-blue-50 border-l-4 blue-500), Credit low warning (amber pulse badge), Top-up processing (spinner + disabled), Success (green check + updated balance animation), Search highlight (yellow bg on match).
+- Responsive: Mobile (stacked list + detail toggle, horizontal scroll for stats, bottom sheet top-up), Desktop (split pane, inline stats, centered modal).
+- Micro-interactions: List selection slide, balance counter animation, search match flash, modal fade-scale, tier badge color transition.

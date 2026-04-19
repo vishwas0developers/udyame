@@ -1,0 +1,73 @@
+graph TD
+    Client[Frontend / External Apps] -->|HTTP / WS| GW[API Gateway / CORS & TLS]
+
+    subgraph BackendArchitecture["Backend Architecture"]
+        GW --> MW[Middleware Layer\nJWT Auth, RBAC, Rate Limit, RLS Tenant]
+        MW --> Controllers[FastAPI Routers\nAuth, Planning, Admin, Credits, Docs]
+
+        Controllers -->|Route & Validate| Services[Business Logic & Services]
+
+        subgraph CoreServices["Core Services"]
+            IntentEngine[Intent Classification Engine\nBusiness Mgmt / Proposal / Clarify / General]
+            CreditSvc[Credit Engine\nLedger, Redis Locks, Quotas]
+            AIRouter[AI Model Router\nLiteLLM, Fallback, Cost Calc]
+            RAGSvc[RAG Pipeline\nEmbedding, Vector Search, Context]
+            QuestionEngine[Question Engine\nPermanent, Contextual, Self-Learning]
+            GuardRail[Security Filter\nPII Redaction, Compliance Check]
+            DocGen[Document Generator\nPDF/Excel/Template Engine]
+        end
+
+        Services --> IntentEngine
+        IntentEngine -->|Route to Module| Services
+        Services --> CreditSvc
+        Services --> AIRouter
+        Services --> RAGSvc
+        Services --> QuestionEngine
+        Services --> GuardRail
+        Services --> DocGen
+
+        subgraph TaskQueue["Async Task Queue"]
+            Celery[Celery Workers\nDocument Rendering, Batch Embedding]
+            CeleryBeat[Celery Beat\nCredit Refresh, Scheduled Jobs]
+        end
+
+        DocGen -->|Async Render| Celery
+        CreditSvc -->|Scheduled Refresh| CeleryBeat
+        RAGSvc -->|Batch Embed| Celery
+
+        subgraph DataPersistenceLayer["Data Persistence Layer"]
+            PG[(PostgreSQL 16\nUsers, Companies, Plans, Ledger, Models)]
+            PGVec[(pgvector Extension\nEmbeddings, HNSW/IVF Index)]
+            Redis[(Redis 7\nSessions, Cache, Distributed Locks)]
+            MinIO[(MinIO / S3\nExports, Templates, Audit Logs)]
+        end
+
+        CreditSvc -->|Read/Write Ledger & Quotas| PG
+        CreditSvc -->|Atomic Deductions| Redis
+        RAGSvc -->|Vector Search & Context| PGVec
+        RAGSvc -->|Cache Retrieval Results| Redis
+        GuardRail -->|Audit & Safety Logs| PG
+        DocGen -->|Store Binary Files| MinIO
+        DocGen -->|Save Metadata| PG
+        QuestionEngine -->|CRUD Question Bank| PG
+        QuestionEngine -->|Similarity Check| PGVec
+        IntentEngine -->|Context Lookup| Redis
+
+        subgraph ExternalIntegrations["External Integrations"]
+            LLMs[AI Providers\nOpenAI, Gemini, Qwen, Groq]
+            Pay[Payment Gateways\nRazorpay, Stripe]
+            Email[Notification Service\nSMTP / Resend]
+        end
+
+        AIRouter -->|Async Streaming & Prompts| LLMs
+        Pay -->|Webhook Sync & Entitlements| CreditSvc
+        CreditSvc -->|Plan Activation & Alerts| Email
+        RAGSvc -->|Batch Embedding API| LLMs
+
+        LLMs -->|Token Usage Metrics| CreditSvc
+        Pay -->|Transaction Records| PG
+        Email -->|Delivery Status| PG
+
+        DocGen -->|Presigned URL Gen| MinIO
+        Celery -->|Job Results| Redis
+    end

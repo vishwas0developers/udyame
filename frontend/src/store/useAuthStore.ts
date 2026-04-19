@@ -16,10 +16,17 @@ interface AuthState {
   updateCredits: (newBalance: number) => void;
 }
 
+const getInitialToken = () => {
+  if (typeof window !== "undefined") {
+    return localStorage.getItem("auth_token");
+  }
+  return null;
+};
+
 export const useAuthStore = create<AuthState>((set) => ({
   user: null,
-  token: typeof window !== "undefined" ? localStorage.getItem("auth_token") : null,
-  isAuthenticated: false,
+  token: getInitialToken(),
+  isAuthenticated: !!getInitialToken(),
   setAuth: (user, token) => {
     localStorage.setItem("auth_token", token);
     set({ user, token, isAuthenticated: true });

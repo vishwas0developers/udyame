@@ -18,6 +18,7 @@ Back_end/.env
 Back_end/.env.local
 Back_end/app.db
 Back_end/instance/
+**/*__pycache__/*
 
 # --- Node.js / Next.js (frontend) ---
 frontend/node_modules/
@@ -41,3 +42,4 @@ frontend/.pnpm-debug.log*
 tmp/
 coverage/
 bitarchitect_logs/
+docs/Back_end/venv/Lib/site-packages/alembic/util/messaging.py

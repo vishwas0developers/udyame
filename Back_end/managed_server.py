@@ -38,7 +38,20 @@ class RestartHandler(FileSystemEventHandler):
             "--port", "8000"
         ]
         
-        self.process = subprocess.Popen(cmd)
+        try:
+            print(f"[WATCHDOG] Executing: {' '.join(cmd)}")
+            self.process = subprocess.Popen(cmd, cwd=self.root_dir)
+            
+            # Check for immediate crash in a loop for 3 seconds
+            for i in range(30): # 30 * 0.1s = 3s
+                time.sleep(0.1)
+                if self.process.poll() is not None:
+                    print(f"[ERROR] Backend failed to start with exit code {self.process.returncode}")
+                    return
+            
+            print("[SUCCESS] Backend process launched.")
+        except Exception as e:
+            print(f"[ERROR] Could not start backend: {e}")
 
     def on_modified(self, event):
         if event.is_directory:
