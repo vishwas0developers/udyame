@@ -26,9 +26,9 @@ The backend of **Udyame AI** is a high-performance orchestration engine, adminis
 
 ### 4.1 Authentication & Multi-Tenancy
 - JWT-based stateless auth with RBAC (user, admin, superadmin).
+- Google OAuth 2.0 integration for seamless user onboarding.
+- Stateless session management with rotated Refresh Tokens.
 - Row-Level Security (RLS) isolating company data per user.
-- Subscription tier validation on every authenticated request.
-- Middleware for tenant extraction from auth context.
 - Configurable token expiry and secure cookie options for production.
 
 ### 4.2 Company & Internal Planning Engine
@@ -180,7 +180,9 @@ The backend of **Udyame AI** is a high-performance orchestration engine, adminis
 ---
 
 ## 6. DATA SCHEMA HIGHLIGHTS
-- `users`: Includes `credit_balance`, `subscription_tier`, and `last_refresh_date`.
+- `users`: Includes `full_name`, `email`, `credit_balance`, `subscription_tier`, and `last_refresh_date`.
+- `oauth_accounts`: Links users to external providers (e.g., Google).
+- `refresh_tokens`: Manages server-side token revocation and rotation.
 - `companies`: Multi-tenant company profiles with RLS.
 - `internal_plannings`: JSONB storage for conversational planning data.
 - `question_bank`: Stores `embedding` (vector), `status`, and `usage_metrics`.

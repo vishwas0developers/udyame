@@ -36,7 +36,7 @@ graph TD
         RAGSvc -->|Batch Embed| Celery
 
         subgraph DataPersistenceLayer["Data Persistence Layer"]
-            PG[(PostgreSQL 16\nUsers, Companies, Plans, Ledger, Models)]
+            PG[(PostgreSQL 16\nUsers, OAuth, Refresh Tokens, Companies, Plans, Ledger, Models)]
             PGVec[(pgvector Extension\nEmbeddings, HNSW/IVF Index)]
             Redis[(Redis 7\nSessions, Cache, Distributed Locks)]
             MinIO[(MinIO / S3\nExports, Templates, Audit Logs)]
