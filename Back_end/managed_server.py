@@ -35,7 +35,7 @@ class RestartHandler(FileSystemEventHandler):
             sys.executable, "-m", "uvicorn", 
             self.app_module, 
             "--host", "0.0.0.0", 
-            "--port", "8000"
+            "--port", "5012"
         ]
         
         try:
