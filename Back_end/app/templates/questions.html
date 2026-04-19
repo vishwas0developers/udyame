@@ -1,0 +1,67 @@
+{% extends "layout.html" %}
+
+{% block title %}Question Review - Udyame Admin{% endblock %}
+
+{% block header %}Question Bank Management{% endblock %}
+
+{% block content %}
+<div class="bg-slate-800 rounded-xl border border-slate-700 overflow-hidden">
+    <div class="p-6 border-b border-slate-700 flex justify-between items-center">
+        <h3 class="text-xl font-semibold text-white">Pending Review</h3>
+        <span class="px-3 py-1 bg-amber-500/10 text-amber-400 rounded-full text-xs font-bold">{{ questions|length }} Questions</span>
+    </div>
+    <div class="p-0">
+        <table class="w-full text-left">
+            <thead class="bg-slate-700/50 text-slate-400 text-xs uppercase tracking-wider">
+                <tr>
+                    <th class="px-6 py-4">Status</th>
+                    <th class="px-6 py-4">Question Text</th>
+                    <th class="px-6 py-4">Category</th>
+                    <th class="px-6 py-4">Actions</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-700">
+                {% if not questions %}
+                <tr>
+                    <td colspan="4" class="px-6 py-10 text-center text-slate-500 italic">No questions currently in the bank.</td>
+                </tr>
+                {% endif %}
+                {% for question in questions %}
+                <tr class="hover:bg-slate-700/30 transition">
+                    <td class="px-6 py-4">
+                        <span class="px-2 py-1 rounded-full text-[10px] font-bold uppercase 
+                            {% if question.status == 'PENDING' %}bg-amber-500/10 text-amber-400 border border-amber-500/20
+                            {% elif question.status == 'APPROVED' %}bg-emerald-500/10 text-emerald-400 border border-emerald-500/20
+                            {% else %}bg-rose-500/10 text-rose-400 border border-rose-500/20{% endif %}">
+                            {{ question.status }}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 text-white text-sm max-w-sm">
+                        {{ question.text }}
+                    </td>
+                    <td class="px-6 py-4 text-slate-400 text-sm">
+                        {{ question.category or 'General' }}
+                    </td>
+                    <td class="px-6 py-4">
+                        <div class="flex gap-2">
+                            <form action="/api/questions/{{ question.id }}/review" method="POST" class="inline">
+                                <input type="hidden" name="action" value="approve">
+                                <button type="submit" class="p-2 bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 rounded-lg transition" title="Approve">
+                                    <i class="fas fa-check"></i>
+                                </button>
+                            </form>
+                            <form action="/api/questions/{{ question.id }}/review" method="POST" class="inline">
+                                <input type="hidden" name="action" value="reject">
+                                <button type="submit" class="p-2 bg-rose-500/10 text-rose-400 hover:bg-rose-500/20 rounded-lg transition" title="Reject">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

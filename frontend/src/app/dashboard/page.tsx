@@ -100,9 +100,7 @@ export default function DashboardPage() {
           <h2 className="text-3xl font-bold text-zinc-900 mb-2">
             Welcome back, {user.email.split('@')[0]}!
           </h2>
-          <p className="text-zinc-500 text-lg">
-            Let's build something incredible today.
-          </p>
+          <p className="text-zinc-500 text-lg">Let&apos;s build something incredible today.</p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -117,7 +115,7 @@ export default function DashboardPage() {
               <p className="text-zinc-600 mb-6 leading-relaxed">
                 Our AI wizard helps you articulate your business vision through structured planning and market insights.
               </p>
-              <Button render={(props) => <Link {...props} href="/wizard" />} className="w-full bg-zinc-900 hover:bg-zinc-800">
+              <Button render={(props: React.HTMLAttributes<HTMLAnchorElement>) => <Link {...props} href="/wizard" />} className="w-full bg-zinc-900 hover:bg-zinc-800">
                 Launch Planning Wizard
               </Button>
             </CardContent>

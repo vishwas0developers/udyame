@@ -33,9 +33,13 @@ class PlanModify(BaseModel):
 
 # --- Admin UI Routes ---
 
+@router.get("/")
+async def admin_root():
+    return RedirectResponse(url="/login")
+
 @router.get("/login", response_class=HTMLResponse)
 async def admin_login_get(request: Request):
-    return templates.TemplateResponse("admin/login.html", {"request": request})
+    return templates.TemplateResponse("login.html", {"request": request})
 
 @router.post("/login")
 async def admin_login_post(request: Request, email: str = Form(...), password: str = Form(...)):
@@ -50,7 +54,7 @@ async def admin_dashboard(request: Request, db: Session = Depends(get_db)):
     pending_questions = db.query(QuestionBank).filter(QuestionBank.status == "PENDING").count()
     active_models = db.query(AIModel).filter(AIModel.is_active == True).count()
     
-    return templates.TemplateResponse("admin/dashboard.html", {
+    return templates.TemplateResponse("dashboard.html", {
         "request": request,
         "active_page": "dashboard",
         "stats": {
@@ -64,7 +68,7 @@ async def admin_dashboard(request: Request, db: Session = Depends(get_db)):
 @router.get("/plans", response_class=HTMLResponse)
 async def admin_plans(request: Request, db: Session = Depends(get_db)):
     plans = db.query(SubscriptionPlan).all()
-    return templates.TemplateResponse("admin/plans.html", {
+    return templates.TemplateResponse("plans.html", {
         "request": request,
         "active_page": "plans",
         "plans": plans
@@ -103,11 +107,19 @@ async def admin_update_plan(
 @router.get("/questions", response_class=HTMLResponse)
 async def admin_questions(request: Request, db: Session = Depends(get_db)):
     questions = db.query(QuestionBank).all()
-    return templates.TemplateResponse("admin/questions.html", {
+    return templates.TemplateResponse("questions.html", {
         "request": request,
         "active_page": "questions",
         "questions": questions
     })
+
+@router.get("/models", response_class=HTMLResponse)
+async def admin_models(request: Request):
+    return templates.TemplateResponse("dashboard.html", {"request": request, "active_page": "models", "stats": {}})
+
+@router.get("/users", response_class=HTMLResponse)
+async def admin_users(request: Request):
+    return templates.TemplateResponse("dashboard.html", {"request": request, "active_page": "users", "stats": {}})
 
 @router.get("/logout")
 async def admin_logout():
