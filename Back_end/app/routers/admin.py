@@ -18,10 +18,9 @@ def list_pending_questions(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    # Ensure only admins can access (Logic simplified for demo)
-    if current_user.subscription_tier != "ADMIN":
-        # Note: In real app, we would have a 'role' column
-        pass 
+    # Ensure only admins can access
+    if current_user.role != "ADMIN":
+        raise HTTPException(status_code=403, detail="Not enough permissions")
 
     questions = db.query(QuestionBank).filter(QuestionBank.status == 'PENDING').all()
     return questions

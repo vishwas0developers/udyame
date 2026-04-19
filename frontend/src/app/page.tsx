@@ -36,56 +36,24 @@ export default function LandingPage() {
     return null; // Prevent flicker before redirect
   }
 
-  interface PricingTier {
-    name: string;
-    price: string;
-    description: string;
-    features: string[];
-    buttonText: string;
-    href: string;
-    variant: "default" | "outline";
-    popular?: boolean;
-  }
+  const [plans, setPlans] = useState<any[]>([]);
+  const [plansLoading, setPlansLoading] = useState(true);
 
-  const pricingTiers: PricingTier[] = [
-    {
-      name: "FREE",
-      price: "₹0",
-      description: "Basic access for individuals",
-      features: ["Conversational Planning", "1 Business Plan/mo", "Community Support"],
-      buttonText: "Get Started",
-      href: "/register",
-      variant: "outline" as const,
-    },
-    {
-      name: "PRO",
-      price: "₹999",
-      description: "Advanced features for professionals",
-      features: ["Everything in FREE", "Unlimited Planning", "Priority AI Responses", "PDF Export"],
-      buttonText: "Go Pro",
-      href: "/register",
-      variant: "default" as const,
-    },
-    {
-      name: "BUSINESS",
-      price: "₹2999",
-      description: "Comprehensive tools for growing teams",
-      features: ["Everything in PRO", "Team Collaboration", "Custom Templates", "Advanced Analytics"],
-      buttonText: "Scale Up",
-      href: "/register",
-      variant: "default" as const,
-      popular: true,
-    },
-    {
-      name: "ENTERPRISE",
-      price: "Custom",
-      description: "Custom solutions for large organizations",
-      features: ["Everything in BUSINESS", "Dedicated Account Manager", "SSO & Security", "API Access"],
-      buttonText: "Contact Us",
-      href: "mailto:sales@udyame.ai",
-      variant: "outline" as const,
-    },
-  ];
+  useEffect(() => {
+    const fetchPlans = async () => {
+      try {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/v1/plans/plans`);
+        if (!response.ok) throw new Error("Failed to fetch");
+        const data = await response.json();
+        setPlans(data);
+      } catch (err) {
+        console.error("Plans fetch failed:", err);
+      } finally {
+        setPlansLoading(false);
+      }
+    };
+    fetchPlans();
+  }, []);
 
   return (
     <div className="flex flex-col min-h-screen bg-zinc-50 font-sans selection:bg-indigo-100 selection:text-indigo-900">
@@ -93,15 +61,13 @@ export default function LandingPage() {
       <nav className="fixed top-0 w-full z-50 bg-white/80 backdrop-blur-md border-b border-zinc-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16 items-center">
-            <div className="flex items-center gap-2">
-              <div className="bg-indigo-600 p-1.5 rounded-lg">
-                <Bot className="h-6 w-6 text-white" />
-              </div>
-              <span className="text-xl font-bold text-zinc-900 tracking-tight">Udyame AI</span>
+            <div className="flex items-center gap-2 text-indigo-600">
+              <Bot className="h-7 w-7" />
+              <span className="text-xl font-bold text-zinc-900 tracking-tight">udyame<span className="text-indigo-600">.ai</span></span>
             </div>
             <div className="hidden md:flex items-center gap-8">
               <a href="#features" className="text-sm font-medium text-zinc-600 hover:text-indigo-600 transition-colors">Features</a>
-              <a href="#pricing" className="text-sm font-medium text-zinc-600 hover:text-indigo-600 transition-colors">Pricing</a>
+              <Link href="/billing" className="text-sm font-medium text-zinc-600 hover:text-indigo-600 transition-colors">Pricing</Link>
               <button 
                 onClick={() => {
                   setAuthMode("login");
@@ -143,13 +109,13 @@ export default function LandingPage() {
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-indigo-500"></span>
               </span>
-              Now in Public Beta
+              Built for Modern Entrepreneurs
             </div>
             <h1 className="text-5xl md:text-7xl font-extrabold text-zinc-900 tracking-tight leading-[1.1]">
-              Your AI <span className="text-indigo-600">Business Architect</span>
+              Architect Your <span className="text-indigo-600 underline decoration-indigo-200 underline-offset-8">Business Destiny</span>
             </h1>
             <p className="text-xl text-zinc-600 max-w-2xl mx-auto leading-relaxed">
-              Transform your business ideas into professional-grade plans and proposals with our conversational AI. Built for modern entrepreneurs.
+              Transform raw ideas into high-fidelity business plans and strategic proposals. Driven by intelligence, polished for investors.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
               <Button 
@@ -161,12 +127,12 @@ export default function LandingPage() {
                 className="h-12 px-8 text-base bg-indigo-600 hover:bg-indigo-700 shadow-lg shadow-indigo-200 group"
               >
                 <>
-                  Try for Free
+                  Start Planning Free
                   <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
                 </>
               </Button>
               <Button size="lg" variant="outline" render={(props: React.HTMLAttributes<HTMLAnchorElement>) => <a {...props} href="#features" />} className="h-12 px-8 text-base bg-white">
-                    Explore Features
+                    Explore Capabilities
                   </Button>
             </div>
           </div>
@@ -176,40 +142,40 @@ export default function LandingPage() {
         <section id="features" className="py-24 bg-white border-y border-zinc-200 px-4">
           <div className="max-w-7xl mx-auto">
             <div className="text-center mb-16 space-y-4">
-              <h2 className="text-3xl font-bold text-zinc-900">Built for Professional Success</h2>
-              <p className="text-zinc-600 max-w-2xl mx-auto">Our platform automates the most complex parts of business planning, so you can focus on execution.</p>
+              <h2 className="text-3xl font-bold text-zinc-900 tracking-tight">Enterprise-Grade Planning Suite</h2>
+              <p className="text-zinc-600 max-w-2xl mx-auto">Automate the heavy lifting of business strategy and documentation.</p>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              <Card className="border-zinc-200 shadow-sm hover:shadow-md transition-shadow">
+              <Card className="border-zinc-200 shadow-sm hover:shadow-lg transition-all duration-300 border-t-4 border-t-indigo-500">
                 <CardHeader>
                   <div className="w-12 h-12 bg-indigo-50 rounded-xl flex items-center justify-center mb-4">
                     <MessageSquare className="h-6 w-6 text-indigo-600" />
                   </div>
-                  <CardTitle>Conversational Planning</CardTitle>
+                  <CardTitle>Conversational Architect</CardTitle>
                   <CardDescription>
-                    Interactive AI-driven planning process that guides you through every step of building your business model.
+                    Iterative AI partnership that refines your business model through structured, expert-level dialogue.
                   </CardDescription>
                 </CardHeader>
               </Card>
-              <Card className="border-zinc-200 shadow-sm hover:shadow-md transition-shadow">
+              <Card className="border-zinc-200 shadow-sm hover:shadow-lg transition-all duration-300 border-t-4 border-t-blue-500">
                 <CardHeader>
                   <div className="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center mb-4">
                     <FileText className="h-6 w-6 text-blue-600" />
                   </div>
-                  <CardTitle>Proposal Generation</CardTitle>
+                  <CardTitle>Strategic Proposals</CardTitle>
                   <CardDescription>
-                    Generate automated, professional proposals tailored to your specific industry and client needs in seconds.
+                    Export investor-ready proposals tailored with precision to your specific market and funding requirements.
                   </CardDescription>
                 </CardHeader>
               </Card>
-              <Card className="border-zinc-200 shadow-sm hover:shadow-md transition-shadow">
+              <Card className="border-zinc-200 shadow-sm hover:shadow-lg transition-all duration-300 border-t-4 border-t-emerald-500">
                 <CardHeader>
                   <div className="w-12 h-12 bg-emerald-50 rounded-xl flex items-center justify-center mb-4">
                     <LayoutDashboard className="h-6 w-6 text-emerald-600" />
                   </div>
-                  <CardTitle>Document Management</CardTitle>
+                  <CardTitle>Intelligent Vault</CardTitle>
                   <CardDescription>
-                    A centralized vault to organize, handle, and version-control all your critical business documents and AI outputs.
+                    Version-controlled document management system that keeps all your AI iterations organized and secure.
                   </CardDescription>
                 </CardHeader>
               </Card>
@@ -218,52 +184,63 @@ export default function LandingPage() {
         </section>
 
         {/* Pricing Section */}
-        <section id="pricing" className="py-24 px-4 bg-zinc-50">
+        <section id="pricing" className="py-24 px-4 bg-zinc-50 border-b border-zinc-200">
           <div className="max-w-7xl mx-auto">
             <div className="text-center mb-16 space-y-4">
-              <h2 className="text-3xl font-bold text-zinc-900">Simple, Transparent Pricing</h2>
-              <p className="text-zinc-600">Choose the plan that fits your current business stage.</p>
+              <h2 className="text-3xl font-bold text-zinc-900 tracking-tight">Flexible Plans for Every Stage</h2>
+              <p className="text-zinc-600">Choose the foundation that powers your next big move.</p>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {pricingTiers.map((tier) => (
-                <Card key={tier.name} className={`relative border-zinc-200 flex flex-col ${tier.popular ? 'ring-2 ring-indigo-600 shadow-xl scale-105 z-10' : 'shadow-sm'}`}>
-                  {tier.popular && (
-                    <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-indigo-600 text-white px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider">
-                      Most Popular
+            
+            {plansLoading ? (
+              <div className="flex justify-center py-10">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+              </div>
+            ) : (
+              <div className={`grid grid-cols-1 gap-8 ${plans.length === 1 ? 'max-w-md mx-auto' : plans.length === 2 ? 'md:grid-cols-2 max-w-4xl mx-auto' : 'md:grid-cols-3'}`}>
+                {plans.map((tier) => (
+                  <Card key={tier.name} className={`relative border-zinc-200 flex flex-col transition-all duration-300 ${tier.is_recommended ? 'ring-2 ring-indigo-600 shadow-2xl scale-105 z-10' : 'shadow-sm hover:shadow-md'}`}>
+                    {tier.is_recommended && (
+                      <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-indigo-600 text-white px-4 py-1 rounded-full text-xs font-bold uppercase tracking-wider">
+                        Recommended
+                      </div>
+                    )}
+                    <CardHeader>
+                      <CardTitle className="text-sm font-bold uppercase tracking-widest text-zinc-500">{tier.name}</CardTitle>
+                      <div className="flex items-baseline gap-1 mt-4">
+                        <span className="text-4xl font-extrabold text-zinc-900">₹{tier.price}</span>
+                        <span className="text-zinc-500 text-sm">/mo</span>
+                      </div>
+                    </CardHeader>
+                    <CardContent className="flex-grow">
+                      <ul className="space-y-3">
+                        {tier.features.map((feature: string) => (
+                          <li key={feature} className="flex items-start gap-3 text-sm text-zinc-600">
+                            <CheckCircle2 className="h-5 w-5 text-indigo-500 flex-shrink-0" />
+                            {feature}
+                          </li>
+                        ))}
+                      </ul>
+                    </CardContent>
+                    <div className="p-6 pt-0">
+                      <Button 
+                        onClick={() => {
+                          setAuthMode("signup");
+                          setIsLoginModalOpen(true);
+                        }}
+                        className={`w-full h-11 font-bold ${tier.is_recommended ? 'bg-indigo-600 hover:bg-indigo-700 shadow-md shadow-indigo-100' : 'bg-zinc-900 hover:bg-zinc-800'}`}
+                      >
+                        Get Started
+                      </Button>
                     </div>
-                  )}
-                  <CardHeader>
-                    <CardTitle className="text-sm font-bold uppercase tracking-widest text-zinc-500">{tier.name}</CardTitle>
-                    <div className="flex items-baseline gap-1 mt-4">
-                      <span className="text-4xl font-extrabold text-zinc-900">{tier.price}</span>
-                      {tier.price !== "Custom" && <span className="text-zinc-500 text-sm">/mo</span>}
-                    </div>
-                    <CardDescription className="mt-2">{tier.description}</CardDescription>
-                  </CardHeader>
-                  <CardContent className="flex-grow">
-                    <ul className="space-y-3">
-                      {tier.features.map((feature) => (
-                        <li key={feature} className="flex items-start gap-3 text-sm text-zinc-600">
-                          <CheckCircle2 className="h-5 w-5 text-indigo-500 flex-shrink-0" />
-                          {feature}
-                        </li>
-                      ))}
-                    </ul>
-                  </CardContent>
-                  <div className="p-6 pt-0">
-                    <Button 
-                      variant={tier.variant} 
-                      onClick={() => {
-                        setAuthMode("signup");
-                        setIsLoginModalOpen(true);
-                      }}
-                      className={`w-full h-11 ${tier.popular ? 'bg-indigo-600 hover:bg-indigo-700 shadow-md shadow-indigo-100' : ''}`}
-                    >
-                      {tier.buttonText}
-                    </Button>
-                  </div>
-                </Card>
-              ))}
+                  </Card>
+                ))}
+              </div>
+            )}
+            
+            <div className="mt-12 text-center">
+              <Link href="/billing" className="text-sm font-semibold text-indigo-600 hover:text-indigo-700 flex items-center justify-center gap-2">
+                View detailed plan comparison <ArrowRight className="h-4 w-4" />
+              </Link>
             </div>
           </div>
         </section>

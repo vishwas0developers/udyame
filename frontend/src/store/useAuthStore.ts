@@ -3,7 +3,16 @@ import { create } from "zustand";
 interface User {
   id: string;
   email: string;
-  subscription_tier: string;
+  plan_id?: string;
+  subscription_plan?: {
+    id: string;
+    name: string;
+    price: number;
+    credits_included: number;
+    features: string[];
+    is_active: boolean;
+    is_recommended: boolean;
+  };
   credit_balance: number;
 }
 

@@ -26,13 +26,13 @@ def get_application() -> FastAPI:
         allow_headers=["*"],
     )
 
-    from app.routers import auth, planning, admin, admin_ui, credits
+    from app.routers import auth, planning, credits, billing, admin_panel
 
     _app.include_router(auth.router, prefix=f"{settings.API_V1_STR}/auth", tags=["Authentication"])
     _app.include_router(planning.router, prefix=f"{settings.API_V1_STR}/planning", tags=["Planning"])
-    _app.include_router(admin.router, prefix=f"{settings.API_V1_STR}/admin", tags=["Admin API"])
     _app.include_router(credits.router, prefix=f"{settings.API_V1_STR}/credits", tags=["Credits"])
-    _app.include_router(admin_ui.router, prefix="", tags=["Admin UI"])
+    _app.include_router(billing.router, prefix=f"{settings.API_V1_STR}/plans", tags=["Billing"])
+    _app.include_router(admin_panel.router, prefix="", tags=["Admin Panel"])
 
 
     @_app.get("/health")

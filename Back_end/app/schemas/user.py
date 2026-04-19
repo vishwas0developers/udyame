@@ -2,6 +2,7 @@ from typing import Optional
 from pydantic import BaseModel, EmailStr
 from uuid import UUID
 from datetime import datetime
+from app.schemas.subscription_plan import SubscriptionPlanOut
 
 # User input for registration
 class UserCreate(BaseModel):
@@ -14,7 +15,8 @@ class UserOut(BaseModel):
     id: UUID
     email: EmailStr
     full_name: Optional[str] = None
-    subscription_tier: str
+    plan_id: Optional[UUID] = None
+    subscription_plan: Optional[SubscriptionPlanOut] = None
     credit_balance: float
     created_at: datetime
 

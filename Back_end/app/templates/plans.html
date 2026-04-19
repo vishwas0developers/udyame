@@ -1,0 +1,108 @@
+{% extends "layout.html" %}
+
+{% block title %}Manage Plans - Udyame Admin{% endblock %}
+
+{% block header %}Subscription Plans{% endblock %}
+
+{% block content %}
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    {% for plan in plans %}
+    <div class="bg-slate-800 rounded-xl border border-slate-700 overflow-hidden flex flex-col group">
+        <div class="p-6">
+            <div class="flex justify-between items-start mb-4">
+                <div>
+                    <h3 class="text-xl font-bold text-white">{{ plan.name }}</h3>
+                    <p class="text-sm text-slate-400">ID: {{ plan.id }}</p>
+                </div>
+                <span class="px-3 py-1 rounded-full text-xs font-bold uppercase {% if plan.is_active %}bg-emerald-500/10 text-emerald-400 border border-emerald-500/20{% else %}bg-rose-500/10 text-rose-400 border border-rose-500/20{% endif %}">
+                    {{ 'Active' if plan.is_active else 'Disabled' }}
+                </span>
+            </div>
+
+            <!-- Edit Form (Hidden by default, shown on click) -->
+            <div id="view-{{ plan.id }}" class="space-y-4 mb-6">
+                <div class="flex justify-between items-center text-sm">
+                    <span class="text-slate-400">Price:</span>
+                    <span class="text-white font-semibold">₹{{ plan.price }}</span>
+                </div>
+                <div class="flex justify-between items-center text-sm">
+                    <span class="text-slate-400">Credits:</span>
+                    <span class="text-white font-semibold">{{ plan.credits_included }}</span>
+                </div>
+                <div>
+                    <span class="text-slate-400 text-sm block mb-2">Features:</span>
+                    <ul class="text-xs space-y-1">
+                        {% for feature in plan.features %}
+                        <li class="flex items-center text-slate-300">
+                            <i class="fas fa-check text-indigo-400 mr-2"></i> {{ feature }}
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                <button onclick="toggleEdit('{{ plan.id }}')" class="text-xs text-indigo-400 hover:text-indigo-300 font-medium">
+                    <i class="fas fa-edit mr-1"></i> Edit Details
+                </button>
+            </div>
+
+            <form id="edit-{{ plan.id }}" action="/plans/{{ plan.id }}/update" method="POST" class="hidden space-y-3 mb-6 bg-slate-900/40 p-3 rounded-lg border border-slate-700">
+                <div>
+                    <label class="text-[10px] uppercase font-bold text-slate-500">Plan Name</label>
+                    <input type="text" name="name" value="{{ plan.name }}" class="w-full bg-slate-800 border border-slate-600 rounded px-2 py-1 text-sm text-white focus:border-indigo-500 outline-none">
+                </div>
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <label class="text-[10px] uppercase font-bold text-slate-500">Price (₹)</label>
+                        <input type="number" name="price" value="{{ plan.price }}" class="w-full bg-slate-800 border border-slate-600 rounded px-2 py-1 text-sm text-white focus:border-indigo-500 outline-none">
+                    </div>
+                    <div>
+                        <label class="text-[10px] uppercase font-bold text-slate-500">Credits</label>
+                        <input type="number" name="credits_included" value="{{ plan.credits_included }}" class="w-full bg-slate-800 border border-slate-600 rounded px-2 py-1 text-sm text-white focus:border-indigo-500 outline-none">
+                    </div>
+                </div>
+                <div>
+                    <label class="text-[10px] uppercase font-bold text-slate-500">Features (Comma separated)</label>
+                    <textarea name="features" class="w-full bg-slate-800 border border-slate-600 rounded px-2 py-1 text-xs text-white focus:border-indigo-500 outline-none h-20">{{ plan.features|join(', ') }}</textarea>
+                </div>
+                <div class="flex items-center gap-4">
+                    <label class="flex items-center gap-2 cursor-pointer">
+                        <input type="checkbox" name="is_active" {% if plan.is_active %}checked{% endif %} value="True" class="accent-indigo-500">
+                        <span class="text-[10px] uppercase font-bold text-slate-400">Active</span>
+                    </label>
+                    <label class="flex items-center gap-2 cursor-pointer">
+                        <input type="checkbox" name="is_recommended" {% if plan.is_recommended %}checked{% endif %} value="True" class="accent-indigo-500">
+                        <span class="text-[10px] uppercase font-bold text-slate-400">Recommended</span>
+                    </label>
+                </div>
+                <div class="flex gap-2 pt-2">
+                    <button type="submit" class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white py-1.5 rounded text-xs font-bold transition">Save Changes</button>
+                    <button type="button" onclick="toggleEdit('{{ plan.id }}')" class="bg-slate-700 hover:bg-slate-600 text-white px-3 py-1.5 rounded text-xs transition">Cancel</button>
+                </div>
+            </form>
+        </div>
+
+        <div class="mt-auto p-4 bg-slate-900/50 border-t border-slate-700">
+            <form action="/plans/{{ plan.id }}/toggle" method="POST">
+                <button type="submit" class="w-full px-4 py-2 rounded-lg font-medium transition text-sm {% if plan.is_active %}bg-rose-500/10 text-rose-400 hover:bg-rose-500/20 border border-rose-500/20{% else %}bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 border border-emerald-500/20{% endif %}">
+                    <i class="fas {% if plan.is_active %}fa-ban{% else %}fa-check-circle{% endif %} mr-2"></i>
+                    {{ 'Fast Disable' if plan.is_active else 'Fast Enable' }}
+                </button>
+            </form>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<script>
+function toggleEdit(id) {
+    const view = document.getElementById('view-' + id);
+    const edit = document.getElementById('edit-' + id);
+    if (view.classList.contains('hidden')) {
+        view.classList.remove('hidden');
+        edit.classList.add('hidden');
+    } else {
+        view.classList.add('hidden');
+        edit.classList.remove('hidden');
+    }
+}
+</script>
+{% endblock %}

@@ -6,6 +6,18 @@ from pgvector.sqlalchemy import Vector
 from datetime import datetime
 from app.models.base import Base
 
+class SubscriptionPlan(Base):
+    __tablename__ = "subscription_plans"
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    name = Column(String(50), nullable=False) # Free, Pro, Enterprise
+    price = Column(Numeric(10, 2), default=0.00)
+    credits_included = Column(Integer, default=0)
+    features = Column(JSONB, default=[]) 
+    is_active = Column(Boolean, default=True) # Determines if plan is available to select
+    is_recommended = Column(Boolean, default=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
 class User(Base):
     __tablename__ = "users"
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
@@ -14,11 +26,14 @@ class User(Base):
     full_name = Column(String(255), nullable=True)
     is_verified = Column(Boolean, default=False)
     verification_token = Column(String(100), nullable=True)
-    subscription_tier = Column(String(50), default="FREE")
+    role = Column(String(20), default="USER") # USER, ADMIN
+    plan_id = Column(UUID(as_uuid=True), ForeignKey("subscription_plans.id", ondelete="SET NULL"), nullable=True)
     credit_balance = Column(Numeric(10, 2), default=0.00)
     last_credit_refresh = Column(DateTime, default=datetime.utcnow)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    subscription_plan = relationship("SubscriptionPlan")
 
     companies = relationship("Company", back_populates="owner", cascade="all, delete-orphan")
     oauth_accounts = relationship("OAuthAccount", back_populates="user", cascade="all, delete-orphan")
