@@ -35,7 +35,7 @@ class PlanModify(BaseModel):
 
 @router.get("/")
 async def admin_root():
-    return RedirectResponse(url="/login")
+    return RedirectResponse(url="/dashboard")
 
 @router.get("/login", response_class=HTMLResponse)
 async def admin_login_get(request: Request):
@@ -50,6 +50,14 @@ async def admin_login_post(request: Request, email: str = Form(...), password: s
 
 @router.get("/dashboard", response_class=HTMLResponse)
 async def admin_dashboard(request: Request, db: Session = Depends(get_db)):
+    if not request.cookies.get("admin_session"):
+        return templates.TemplateResponse("dashboard.html", {
+            "request": request,
+            "active_page": "dashboard",
+            "requires_login": True,
+            "stats": {"users": 0, "pending_q": 0, "models": 0, "plans": 0}
+        })
+    
     user_count = db.query(User).count()
     pending_questions = db.query(QuestionBank).filter(QuestionBank.status == "PENDING").count()
     active_models = db.query(AIModel).filter(AIModel.is_active == True).count()
@@ -67,6 +75,13 @@ async def admin_dashboard(request: Request, db: Session = Depends(get_db)):
 
 @router.get("/plans", response_class=HTMLResponse)
 async def admin_plans(request: Request, db: Session = Depends(get_db)):
+    if not request.cookies.get("admin_session"):
+        return templates.TemplateResponse("plans.html", {
+            "request": request,
+            "active_page": "plans",
+            "requires_login": True,
+            "plans": []
+        })
     plans = db.query(SubscriptionPlan).all()
     return templates.TemplateResponse("plans.html", {
         "request": request,
@@ -106,6 +121,13 @@ async def admin_update_plan(
 
 @router.get("/questions", response_class=HTMLResponse)
 async def admin_questions(request: Request, db: Session = Depends(get_db)):
+    if not request.cookies.get("admin_session"):
+        return templates.TemplateResponse("questions.html", {
+            "request": request,
+            "active_page": "questions",
+            "requires_login": True,
+            "questions": []
+        })
     questions = db.query(QuestionBank).all()
     return templates.TemplateResponse("questions.html", {
         "request": request,
