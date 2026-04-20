@@ -1,9 +1,9 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { Bot, LayoutDashboard, Menu, X } from "lucide-react";
+import { Bot, Menu, X } from "lucide-react";
 import { useAuthStore } from "@/store/useAuthStore";
 import { LoginModal } from "@/components/LoginModal";
 
@@ -16,6 +16,15 @@ export function Navbar({ showPricingLink = true }: NavbarProps) {
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [authMode, setAuthMode] = useState<"login" | "signup">("login");
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  // Avoid hydration mismatch by waiting until mounted
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setMounted(true);
+    }, 0);
+    return () => clearTimeout(timer);
+  }, []);
 
   return (
     <nav className="fixed top-0 w-full z-50 bg-white/80 backdrop-blur-md border-b border-zinc-200">
@@ -34,38 +43,40 @@ export function Navbar({ showPricingLink = true }: NavbarProps) {
               <Link href="/billing" className="text-sm font-medium text-zinc-600 hover:text-indigo-600 transition-colors">Pricing</Link>
             )}
             
-            {isAuthenticated ? (
-              <>
-                <Link href="/dashboard" className="text-sm font-medium text-zinc-600 hover:text-indigo-600 transition-colors">Dashboard</Link>
-                <Button 
-                  onClick={() => logout()}
-                  variant="ghost"
-                  className="text-sm font-medium text-zinc-600 hover:text-red-600"
-                >
-                  Logout
-                </Button>
-              </>
-            ) : (
-              <>
-                <button 
-                  onClick={() => {
-                    setAuthMode("login");
-                    setIsLoginModalOpen(true);
-                  }}
-                  className="text-sm font-medium text-zinc-600 hover:text-indigo-600 transition-colors"
-                >
-                  Login
-                </button>
-                <Button 
-                  onClick={() => {
-                    setAuthMode("signup");
-                    setIsLoginModalOpen(true);
-                  }}
-                  className="bg-indigo-600 hover:bg-indigo-700 shadow-sm shadow-indigo-200"
-                >
-                  Try Now
-                </Button>
-              </>
+            {mounted && (
+              isAuthenticated ? (
+                <>
+                  <Link href="/dashboard" className="text-sm font-medium text-zinc-600 hover:text-indigo-600 transition-colors">Dashboard</Link>
+                  <Button 
+                    onClick={() => logout()}
+                    variant="ghost"
+                    className="text-sm font-medium text-zinc-600 hover:text-red-600"
+                  >
+                    Logout
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <button 
+                    onClick={() => {
+                      setAuthMode("login");
+                      setIsLoginModalOpen(true);
+                    }}
+                    className="text-sm font-medium text-zinc-600 hover:text-indigo-600 transition-colors"
+                  >
+                    Login
+                  </button>
+                  <Button 
+                    onClick={() => {
+                      setAuthMode("signup");
+                      setIsLoginModalOpen(true);
+                    }}
+                    className="bg-indigo-600 hover:bg-indigo-700 shadow-sm shadow-indigo-200"
+                  >
+                    Try Now
+                  </Button>
+                </>
+              )
             )}
           </div>
 
@@ -85,32 +96,34 @@ export function Navbar({ showPricingLink = true }: NavbarProps) {
           {showPricingLink && (
             <Link href="/billing" className="block text-sm font-medium text-zinc-600 px-2 py-1" onClick={() => setIsMobileMenuOpen(false)}>Pricing</Link>
           )}
-          {isAuthenticated ? (
-            <>
-              <Link href="/dashboard" className="block text-sm font-medium text-zinc-600 px-2 py-1" onClick={() => setIsMobileMenuOpen(false)}>Dashboard</Link>
-              <Button 
-                onClick={() => { logout(); setIsMobileMenuOpen(false); }}
-                variant="ghost" 
-                className="w-full justify-start text-red-600"
-              >
-                Logout
-              </Button>
-            </>
-          ) : (
-            <div className="flex flex-col gap-2 pt-2">
-              <Button 
-                variant="outline"
-                onClick={() => { setAuthMode("login"); setIsLoginModalOpen(true); setIsMobileMenuOpen(false); }}
-              >
-                Login
-              </Button>
-              <Button 
-                onClick={() => { setAuthMode("signup"); setIsLoginModalOpen(true); setIsMobileMenuOpen(false); }}
-                className="bg-indigo-600"
-              >
-                Get Started
-              </Button>
-            </div>
+          {mounted && (
+            isAuthenticated ? (
+              <>
+                <Link href="/dashboard" className="block text-sm font-medium text-zinc-600 px-2 py-1" onClick={() => setIsMobileMenuOpen(false)}>Dashboard</Link>
+                <Button 
+                  onClick={() => { logout(); setIsMobileMenuOpen(false); }}
+                  variant="ghost" 
+                  className="w-full justify-start text-red-600"
+                >
+                  Logout
+                </Button>
+              </>
+            ) : (
+              <div className="flex flex-col gap-2 pt-2">
+                <Button 
+                  variant="outline"
+                  onClick={() => { setAuthMode("login"); setIsLoginModalOpen(true); setIsMobileMenuOpen(false); }}
+                >
+                  Login
+                </Button>
+                <Button 
+                  onClick={() => { setAuthMode("signup"); setIsLoginModalOpen(true); setIsMobileMenuOpen(false); }}
+                  className="bg-indigo-600"
+                >
+                  Get Started
+                </Button>
+              </div>
+            )
           )}
         </div>
       )}

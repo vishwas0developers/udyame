@@ -27,8 +27,13 @@ export default function LandingPage() {
   const [plans, setPlans] = useState<Plan[]>([]);
   const [plansLoading, setPlansLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    const timer = setTimeout(() => {
+      setMounted(true);
+    }, 0);
+
     if (isAuthenticated) {
       router.push("/dashboard");
     }
@@ -45,9 +50,10 @@ export default function LandingPage() {
       }
     };
     fetchPlans();
+    return () => clearTimeout(timer);
   }, [isAuthenticated, router]);
 
-  if (isAuthenticated) {
+  if (mounted && isAuthenticated) {
     return null;
   }
 
