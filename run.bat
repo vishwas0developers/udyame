@@ -33,6 +33,54 @@ taskkill /F /IM node.exe /T >nul 2>&1
 echo [SUCCESS] Cleanup complete.
 echo.
 
+REM 0.5. Docker and Database Check
+echo [STEP 0.5/4] Checking Docker and Database Readiness...
+docker info >nul 2>&1
+if %errorlevel% equ 0 goto :docker_ready
+
+echo [INFO] Docker is not running. Attempting to start Docker Desktop...
+if not exist "C:\Program Files\Docker\Docker\Docker Desktop.exe" (
+    echo [ERROR] Docker Desktop not found at 'C:\Program Files\Docker\Docker\Docker Desktop.exe'.
+    echo [HINT] Please ensure Docker is installed and running manually.
+    pause
+    exit /b 1
+)
+
+start "" "C:\Program Files\Docker\Docker\Docker Desktop.exe"
+echo [INFO] Waiting for Docker to start (this may take a minute)...
+set "waited=0"
+
+:wait_docker
+timeout /t 5 >nul
+set /a "waited+=5"
+docker info >nul 2>&1
+if %errorlevel% equ 0 (
+    echo [SUCCESS] Docker daemon is now responsive.
+    goto :docker_ready
+)
+
+if %waited% gtr 60 (
+    echo [ERROR] Docker did not start in 60 seconds.
+    echo [HINT] Please start Docker Desktop manually and restart this script.
+    pause
+    exit /b 1
+)
+echo [INFO] Still waiting for Docker... (%waited%s)
+goto :wait_docker
+
+:docker_ready
+echo [INFO] Ensuring database container is running...
+pushd "%BACKEND_DIR%"
+docker-compose up -d || (
+    echo [ERROR] Failed to start database container via docker-compose.
+    popd
+    pause
+    exit /b 1
+)
+popd
+echo [SUCCESS] Docker and Database are ready.
+echo.
+
 REM 1. Check Dependencies
 echo [STEP 1/4] Checking System Dependencies...
 python --version >nul 2>&1
