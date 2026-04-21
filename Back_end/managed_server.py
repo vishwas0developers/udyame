@@ -19,20 +19,20 @@ class RestartHandler(FileSystemEventHandler):
         self.start_process()
 
     def resolve_db_conflicts(self):
-        """Detect and resolve port 5432 conflicts (e.g. local Postgres vs Docker)"""
-        print("[SELF-HEAL] Checking for database port conflicts (5432)...")
+        """Detect and resolve port 5013 conflicts (e.g. local Postgres vs Docker)"""
+        print("[SELF-HEAL] Checking for database port conflicts (5013)...")
         try:
-            # Check if port 5432 is in use
+            # Check if port 5013 is in use
             with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
                 s.settimeout(1)
-                if s.connect_ex(('127.0.0.1', 5432)) != 0:
-                    print("[SUCCESS] Port 5432 is available for Docker.")
+                if s.connect_ex(('127.0.0.1', 5013)) != 0:
+                    print("[SUCCESS] Port 5013 is available for Docker.")
                     return
 
             # Port is occupied. Identify the process.
-            print("[WARN] Port 5432 is occupied. Investigating process...")
+            print("[WARN] Port 5013 is occupied. Investigating process...")
             try:
-                output = subprocess.check_output('netstat -ano | findstr :5432', shell=True).decode()
+                output = subprocess.check_output('netstat -ano | findstr :5013', shell=True).decode()
                 pids = set()
                 for line in output.strip().split('\n'):
                     if 'LISTENING' in line:
@@ -53,7 +53,7 @@ class RestartHandler(FileSystemEventHandler):
                             print("[HINT] Please stop the local PostgreSQL service manually and restart.")
                             sys.exit(1)
                     else:
-                        print(f"[ERROR] Port 5432 is not free (Used by PID {pid}).")
+                        print(f"[ERROR] Port 5013 is not free (Used by PID {pid}).")
                         sys.exit(1)
             except subprocess.CalledProcessError:
                 print("[INFO] No active listener found via netstat.")
