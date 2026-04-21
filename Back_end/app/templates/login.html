@@ -25,6 +25,9 @@
 
         <div class="bg-slate-900 p-8 rounded-2xl border border-slate-700 shadow-2xl">
             <form action="/login" method="POST" class="space-y-6">
+                {% if next_url %}
+                <input type="hidden" name="next" value="{{ next_url }}">
+                {% endif %}
                 <div>
                     <label class="block text-sm font-medium text-slate-300 mb-2">Email Address</label>
                     <div class="relative">

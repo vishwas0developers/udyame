@@ -33,64 +33,79 @@ class PlanModify(BaseModel):
 
 # --- Admin UI Routes ---
 
+# --- Helper ---
+def check_admin_auth(request: Request):
+    return request.cookies.get("admin_session")
+
+# --- Admin UI Routes ---
+
 @router.get("/")
-async def admin_root():
-    return RedirectResponse(url="/dashboard")
+async def admin_root(request: Request):
+    if check_admin_auth(request):
+        return RedirectResponse(url="/dashboard")
+    return RedirectResponse(url="/login")
 
 @router.get("/login", response_class=HTMLResponse)
-async def admin_login_get(request: Request):
-    return templates.TemplateResponse("login.html", {"request": request})
+async def admin_login_get(request: Request, next: Optional[str] = None):
+    # If already logged in, go to dashboard
+    if check_admin_auth(request):
+        return RedirectResponse(url="/dashboard")
+    return templates.TemplateResponse("login.html", {"request": request, "next_url": next})
 
 @router.post("/login")
-async def admin_login_post(request: Request, email: str = Form(...), password: str = Form(...)):
+async def admin_login_post(request: Request, email: str = Form(...), password: str = Form(...), next: Optional[str] = Form(None)):
     # Placeholder for secure admin login logic
-    response = RedirectResponse(url="/dashboard", status_code=303)
+    target_url = next if next else "/dashboard"
+    response = RedirectResponse(url=target_url, status_code=303)
     response.set_cookie(key="admin_session", value="mock_session_id")
     return response
 
 @router.get("/dashboard", response_class=HTMLResponse)
 async def admin_dashboard(request: Request, db: Session = Depends(get_db)):
-    if not request.cookies.get("admin_session"):
-        return templates.TemplateResponse("dashboard.html", {
-            "request": request,
-            "active_page": "dashboard",
-            "requires_login": True,
-            "stats": {"users": 0, "pending_q": 0, "models": 0, "plans": 0}
-        })
+    requires_login = not check_admin_auth(request)
     
-    user_count = db.query(User).count()
-    pending_questions = db.query(QuestionBank).filter(QuestionBank.status == "PENDING").count()
-    active_models = db.query(AIModel).filter(AIModel.is_active == True).count()
+    user_count = 0
+    pending_questions = 0
+    active_models = 0
+    plan_count = 0
+    
+    if not requires_login:
+        user_count = db.query(User).count()
+        pending_questions = db.query(QuestionBank).filter(QuestionBank.status == "PENDING").count()
+        active_models = db.query(AIModel).filter(AIModel.is_active == True).count()
+        plan_count = db.query(SubscriptionPlan).count()
     
     return templates.TemplateResponse("dashboard.html", {
         "request": request,
         "active_page": "dashboard",
+        "requires_login": requires_login,
         "stats": {
             "users": user_count,
             "pending_q": pending_questions,
             "models": active_models,
-            "plans": db.query(SubscriptionPlan).count()
+            "plans": plan_count
         }
     })
 
 @router.get("/plans", response_class=HTMLResponse)
 async def admin_plans(request: Request, db: Session = Depends(get_db)):
-    if not request.cookies.get("admin_session"):
-        return templates.TemplateResponse("plans.html", {
-            "request": request,
-            "active_page": "plans",
-            "requires_login": True,
-            "plans": []
-        })
-    plans = db.query(SubscriptionPlan).all()
+    requires_login = not check_admin_auth(request)
+    plans = []
+    if not requires_login:
+        plans = db.query(SubscriptionPlan).all()
+        
     return templates.TemplateResponse("plans.html", {
         "request": request,
         "active_page": "plans",
+        "requires_login": requires_login,
         "plans": plans
     })
 
 @router.post("/plans/{plan_id}/toggle")
-async def admin_toggle_plan(plan_id: str, db: Session = Depends(get_db)):
+async def admin_toggle_plan(plan_id: str, request: Request, db: Session = Depends(get_db)):
+    if not check_admin_auth(request):
+        raise HTTPException(status_code=401)
+        
     plan = db.query(SubscriptionPlan).filter(SubscriptionPlan.id == plan_id).first()
     if plan:
         plan.is_active = not plan.is_active
@@ -100,6 +115,7 @@ async def admin_toggle_plan(plan_id: str, db: Session = Depends(get_db)):
 @router.post("/plans/{plan_id}/update")
 async def admin_update_plan(
     plan_id: str, 
+    request: Request,
     name: str = Form(...),
     price: float = Form(...),
     credits_included: int = Form(...),
@@ -108,6 +124,9 @@ async def admin_update_plan(
     is_recommended: bool = Form(False),
     db: Session = Depends(get_db)
 ):
+    if not check_admin_auth(request):
+        raise HTTPException(status_code=401)
+
     plan = db.query(SubscriptionPlan).filter(SubscriptionPlan.id == plan_id).first()
     if plan:
         plan.name = name
@@ -121,31 +140,41 @@ async def admin_update_plan(
 
 @router.get("/questions", response_class=HTMLResponse)
 async def admin_questions(request: Request, db: Session = Depends(get_db)):
-    if not request.cookies.get("admin_session"):
-        return templates.TemplateResponse("questions.html", {
-            "request": request,
-            "active_page": "questions",
-            "requires_login": True,
-            "questions": []
-        })
-    questions = db.query(QuestionBank).all()
+    requires_login = not check_admin_auth(request)
+    questions = []
+    if not requires_login:
+        questions = db.query(QuestionBank).all()
+        
     return templates.TemplateResponse("questions.html", {
         "request": request,
         "active_page": "questions",
+        "requires_login": requires_login,
         "questions": questions
     })
 
 @router.get("/models", response_class=HTMLResponse)
 async def admin_models(request: Request):
-    return templates.TemplateResponse("dashboard.html", {"request": request, "active_page": "models", "stats": {}})
+    return templates.TemplateResponse("dashboard.html", {
+        "request": request, 
+        "active_page": "models", 
+        "requires_login": not check_admin_auth(request),
+        "stats": {"users": 0, "pending_q": 0, "models": 0, "plans": 0}
+    })
 
 @router.get("/users", response_class=HTMLResponse)
 async def admin_users(request: Request):
-    return templates.TemplateResponse("dashboard.html", {"request": request, "active_page": "users", "stats": {}})
+    return templates.TemplateResponse("dashboard.html", {
+        "request": request, 
+        "active_page": "users", 
+        "requires_login": not check_admin_auth(request),
+        "stats": {"users": 0, "pending_q": 0, "models": 0, "plans": 0}
+    })
 
 @router.get("/logout")
-async def admin_logout():
-    response = RedirectResponse(url="/login")
+async def admin_logout(request: Request, next: Optional[str] = None):
+    # Determine where to send them back (stay on same page)
+    target = next if next else request.headers.get("referer", "/dashboard")
+    response = RedirectResponse(url=target, status_code=303)
     response.delete_cookie("admin_session")
     return response
 
