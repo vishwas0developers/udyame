@@ -1,0 +1,54 @@
+graph TD
+    Start([Start run.bat]) --> Clean[Step 0: Cleanup Phase]
+    Clean -->|Taskkill python/node| DockerCheck[Step 0.5: Docker & DB Check]
+    
+    DockerCheck --> IsDockerRunning{Is Docker Running?}
+    IsDockerRunning -->|No| StartDocker[Attempt to Start Docker Desktop]
+    StartDocker --> WaitDocker[Wait for Docker Daemon]
+    WaitDocker -->|Success| RunCompose[Docker Compose Up -d]
+    IsDockerRunning -->|Yes| RunCompose
+    
+    RunCompose --> DepCheck[Step 1: System Dependency Check]
+    DepCheck --> CheckPython[Check Python]
+    DepCheck --> CheckNode[Check Node.js]
+    DepCheck --> CheckFiles[Verify Folder Structure]
+    
+    CheckPython & CheckNode & CheckFiles --> BEPrep[Step 2: Backend Prep]
+    
+    subgraph BackendSetup["Backend Environment Setup"]
+        BEPrep --> VenvCheck{Venv Exists?}
+        VenvCheck -->|No/Broken| CreateVenv[Create Python Venv]
+        VenvCheck -->|Yes| PipCheck[Check Pip in Venv]
+        CreateVenv --> PipCheck
+        PipCheck --> PipUpgrade[Upgrade Pip]
+        PipUpgrade --> PipInstall[Install requirements.txt]
+    end
+    
+    PipInstall --> FEPrep[Step 3: Frontend Prep]
+    
+    subgraph FrontendSetup["Frontend Environment Setup"]
+        FEPrep --> NodeModulesCheck{node_modules Exists?}
+        NodeModulesCheck -->|No| NPMInstall[Run npm install]
+        NodeModulesCheck -->|Yes| LaunchPhase[Step 4: Launching Phase]
+        NPMInstall --> LaunchPhase
+    end
+    
+    subgraph Launch["Launch & Runtime"]
+        LaunchPhase --> Watchdog[Start managed_server.py]
+        Watchdog --> SelfHeal{Self-Heal: Resolve Port 5013?}
+        SelfHeal -->|ConflictFound| KillLocalPG[Taskkill Local Postgres]
+        SelfHeal -->|Safe| Uvicorn[Launch Uvicorn :5012]
+        KillLocalPG --> Uvicorn
+        Uvicorn --> Monitor[Watchdog Monitoring .py/.env]
+        LaunchPhase --> LaunchFE[Start Frontend: npm run dev]
+    end
+    
+    Monitor -->|Change Detected| Uvicorn
+    LaunchFE --> Success([Project Running])
+    Uvicorn --> Success
+    
+    style Start fill:#f9f,stroke:#333,stroke-width:2px
+    style Success fill:#0f0,stroke:#333,stroke-width:2px
+    style BackendSetup fill:#e1f5fe,stroke:#01579b
+    style FrontendSetup fill:#fff3e0,stroke:#e65100
+    style Launch fill:#e8f5e9,stroke:#2e7d32

@@ -1,0 +1,44 @@
+graph TB
+    subgraph Launcher["Launcher & Developer Layer"]
+        RUN[run.bat]
+        Watchdog[managed_server.py\nSelf-Healing & Hot-Reload]
+        RUN --> Watchdog
+    end
+
+    subgraph UserInterface["User Interface (Frontend)"]
+        NextJS["Next.js 15 (App Router)"]
+        Auth[Firebase Auth]
+        Store[Zustand & React Query]
+        NextJS --> Store
+        NextJS --> Auth
+    end
+
+    subgraph BackendAPI["Intelligence Layer (Backend)"]
+        FastAPI["FastAPI / Uvicorn"]
+        Services["Business Services\nIntent, Credits, RAG, DocGen"]
+        LLM[AI Models\nGemini, OpenAI, LiteLLM]
+        FastAPI --> Services
+        Services --> LLM
+    end
+
+    subgraph DataPersistence["Data & Infrastructure"]
+        Docker["Docker Desktop"]
+        Postgres[(PostgreSQL 16\n+ pgvector)]
+        Storage["Storage FS\nTemplates & Logs"]
+        Docker --> Postgres
+    end
+
+    %% Connectivity
+    RUN --- Docker
+    NextJS -- "REST API / JSON" --> FastAPI
+    Watchdog -- "Monitors & Manages" --> FastAPI
+    FastAPI -- "SQLAlchemy / pgvector" --> Postgres
+    FastAPI -- "Local IO" --> Storage
+    
+    %% Styling
+    style RUN fill:#f9f,stroke:#333,stroke-width:2px
+    style NextJS fill:#000,color:#fff,stroke:#333
+    style FastAPI fill:#05998b,color:#fff,stroke:#333
+    style Postgres fill:#336791,color:#fff,stroke:#333
+    style Docker fill:#2496ed,color:#fff,stroke:#333
+    style Watchdog fill:#ff9800,stroke:#333
