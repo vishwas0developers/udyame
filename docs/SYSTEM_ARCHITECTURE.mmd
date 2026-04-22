@@ -1,47 +1,99 @@
-graph TB
-    subgraph Launcher["Launcher & Developer Layer"]
-        RUN[run.bat]
-        Watchdog[managed_server.py\nSelf-Healing & Hot-Reload]
-        RUN --> Watchdog
+graph TD
+    %% Global Styling
+    classDef client fill:#f8fafc,stroke:#94a3b8,stroke-width:2px,color:#0f172a
+    classDef frontend fill:#e0e7ff,stroke:#4338ca,stroke-width:2px,color:#111827
+    classDef backend fill:#f1f5f9,stroke:#475569,stroke-width:2px,color:#1f2937
+    classDef infra fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#451a03
+    classDef external fill:#d1fae5,stroke:#059669,stroke-width:2px,color:#064e3b
+    classDef gateway fill:#e2e8f0,stroke:#64748b,stroke-width:2px,color:#0f172a
+
+    subgraph Client_Layer ["Client Access Layer"]
+        End_User["End User (Web Browser)"]
+        Admin_User["System Administrator"]
+    end
+    class Client_Layer client
+
+    subgraph Frontend_Container ["Docker: Frontend Container (Next.js)"]
+        App_Router["Next.js App Router"]
+        UI_Components["React/Lucide Components"]
+        Zustand_Store["Zustand State Management"]
+        WS_Client["WebSocket Client"]
+        
+        App_Router --> UI_Components
+        UI_Components --> Zustand_Store
+        UI_Components --> WS_Client
+    end
+    class Frontend_Container frontend
+
+    subgraph Backend_Docker ["Docker: Multi-Container Backend Environment"]
+        
+        subgraph Gateway_Admin ["Gateway & Admin Service"]
+            Edge_Proxy["Nginx/Edge Proxy"]
+            JWT_Auth["JWT & RBAC Security"]
+            Admin_UI_SSR["Admin Panel (SSR Templates)"]
+            
+            Edge_Proxy --> JWT_Auth
+            Edge_Proxy --> Admin_UI_SSR
+        end
+        class Gateway_Admin gateway
+
+        subgraph Backend_App ["Core Service Container (FastAPI)"]
+            FastAPI_Entry["FastAPI Entrypoint"]
+            Intent_Engine["Intent & Workflow Engine"]
+            Prompt_Registry["Dynamic Prompt Registry"]
+            Task_Router["Celery Task Router"]
+            LiteLLM_Router["LiteLLM Model Router"]
+            
+            FastAPI_Entry --> Intent_Engine
+            Intent_Engine --> Prompt_Registry
+            Intent_Engine --> Task_Router
+            Intent_Engine --> LiteLLM_Router
+        end
+        class Backend_App backend
+
+        subgraph Infrastructure_Nodes ["Data & Storage Containers"]
+            Postgres_DB[("PostgreSQL + pgvector\n(Persistent Data)")]
+            Redis_Nodes[("Redis\n(Cache & Broker)")]
+            MinIO_Nodes[("MinIO\n(S3 Asset Storage)")]
+        end
+        class Infrastructure_Nodes infra
+
+        subgraph Task_Processing ["Background Processing"]
+            Celery_Worker["Celery Worker Nodes"]
+        end
+        class Task_Processing infra
     end
 
-    subgraph UserInterface["User Interface (Frontend)"]
-        NextJS["Next.js 15 (App Router)"]
-        Auth[Firebase Auth]
-        Store[Zustand & React Query]
-        NextJS --> Store
-        NextJS --> Auth
+    subgraph External_Services ["External Integrations"]
+        AI_API["AI Providers (OpenAI/Anthropic)"]
+        Payments["Payment Gateway (Stripe/Razorpay)"]
+        Notifications["Email & SMS (SMTP/SNS)"]
     end
+    class External_Services external
 
-    subgraph BackendAPI["Intelligence Layer (Backend)"]
-        FastAPI["FastAPI / Uvicorn"]
-        Services["Business Services\nIntent, Credits, RAG, DocGen"]
-        AdminUI["Admin Panel\nGovernance & Logs"]
-        LLM[AI Models\nGemini, OpenAI, LiteLLM]
-        FastAPI --> Services
-        FastAPI --> AdminUI
-        Services --> LLM
-    end
-
-    subgraph DataPersistence["Data & Infrastructure"]
-        Docker["Docker Desktop"]
-        Postgres[(PostgreSQL 16\n+ pgvector)]
-        Storage["Storage FS\nTemplates & Logs"]
-        Docker --> Postgres
-    end
-
-    %% Connectivity
-    RUN --- Docker
-    NextJS -- "REST API / JSON" --> FastAPI
-    Watchdog -- "Monitors & Manages" --> FastAPI
-    FastAPI -- "SQLAlchemy / pgvector" --> Postgres
-    FastAPI -- "Local IO" --> Storage
+    %% Connections
+    End_User -->|"HTTPS / WSS"| App_Router
+    Admin_User -->|"HTTPS (Admin Routes)"| Edge_Proxy
     
-    %% Styling
-    style RUN fill:#f9f,stroke:#333,stroke-width:2px
-    style NextJS fill:#000,color:#fff,stroke:#333
-    style FastAPI fill:#05998b,color:#fff,stroke:#333
-    style AdminUI fill:#673ab7,color:#fff,stroke:#333
-    style Postgres fill:#336791,color:#fff,stroke:#333
-    style Docker fill:#2496ed,color:#fff,stroke:#333
-    style Watchdog fill:#ff9800,stroke:#333
+    App_Router -->|"REST API / WebSockets"| Edge_Proxy
+    WS_Client <-->|"Socket.io / WS Stream"| Edge_Proxy
+    
+    JWT_Auth --> FastAPI_Entry
+    Admin_UI_SSR --> FastAPI_Entry
+    
+    FastAPI_Entry <-->|"Async SQLAlchemy"| Postgres_DB
+    FastAPI_Entry <-->|"Key/Value Store"| Redis_Nodes
+    FastAPI_Entry <-->|"Boto3 SDK"| MinIO_Nodes
+    
+    Task_Router -->|"Task Dispatch"| Redis_Nodes
+    Redis_Nodes -->|"Pull Tasks"| Celery_Worker
+    Celery_Worker <--> Postgres_DB
+    Celery_Worker <--> MinIO_Nodes
+    
+    LiteLLM_Router <-->|"API Request"| AI_API
+    FastAPI_Entry <-->|"Checkout/Webhook"| Payments
+    FastAPI_Entry <-->|"Transactional Mail"| Notifications
+
+    %% Optimization & Metadata
+    LiteLLM_Router -.->|"Token Metrics"| Postgres_DB
+    Celery_Worker -.->|"Task Status"| Redis_Nodes
