@@ -1,76 +1,79 @@
 graph TD
-    Client[Frontend / External Apps] -->|HTTP / WS| GW[API Gateway / CORS & TLS]
+    %% Global Styling & Clear Aesthetics
+    classDef gateway fill:#f0f9ff,stroke:#0369a1,stroke-width:2px,color:#0c4a6e
+    classDef controller fill:#f8fafc,stroke:#334155,stroke-width:2px,color:#0f172a
+    classDef service fill:#eff6ff,stroke:#2563eb,stroke-width:2px,color:#1e3a8a
+    classDef worker fill:#fff7ed,stroke:#ea580c,stroke-width:2px,color:#7c2d12
+    classDef db fill:#f0fdf4,stroke:#16a34a,stroke-width:2px,color:#14532d
+    classDef external fill:#fff1f2,stroke:#e11d48,stroke-width:2px,color:#881337
 
-    subgraph BackendArchitecture["Backend Architecture"]
-        GW --> MW[Middleware Layer\nJWT Auth, RBAC, Rate Limit, RLS Tenant]
-        MW --> Controllers[FastAPI Routers\nAuth, Planning, Admin, Credits, Docs]
-
-        Controllers -->|Route & Validate| Services[Business Logic & Services]
-
-        subgraph CoreServices["Core Services"]
-            IntentEngine[Intent Classification Engine\nBusiness Mgmt / Proposal / Clarify / General]
-            CreditSvc[Credit Engine\nLedger, Redis Locks, Quotas]
-            AIRouter[AI Model Router\nLiteLLM, Fallback, Cost Calc]
-            RAGSvc[RAG Pipeline\nEmbedding, Vector Search, Context]
-            QuestionEngine[Question Engine\nPermanent, Contextual, Self-Learning]
-            LogSvc[Log Management\nUnified Logs, WebSocket Tailing]
-            GuardRail[Security Filter\nPII Redaction, Compliance Check]
-            DocGen[Document Generator\nPDF/Excel/Template Engine]
-        end
-
-        Services --> IntentEngine
-        IntentEngine -->|Route to Module| Services
-        Services --> CreditSvc
-        Services --> AIRouter
-        Services --> RAGSvc
-        Services --> QuestionEngine
-        Services --> LogSvc
-        Services --> GuardRail
-        Services --> DocGen
-
-        subgraph TaskQueue["Async Task Queue"]
-            Celery[Celery Workers\nDocument Rendering, Batch Embedding]
-            CeleryBeat[Celery Beat\nCredit Refresh, Scheduled Jobs]
-        end
-
-        DocGen -->|Async Render| Celery
-        CreditSvc -->|Scheduled Refresh| CeleryBeat
-        RAGSvc -->|Batch Embed| Celery
-
-        subgraph DataPersistenceLayer["Data Persistence Layer"]
-            PG[(PostgreSQL 16\nUsers, OAuth, Refresh Tokens, Companies, Plans, Ledger, Models)]
-            PGVec[(pgvector Extension\nEmbeddings, HNSW/IVF Index)]
-            Redis[(Redis 7\nSessions, Cache, Distributed Locks)]
-            MinIO[(MinIO / S3\nExports, Templates, Audit Logs)]
-        end
-
-        CreditSvc -->|Read/Write Ledger & Quotas| PG
-        CreditSvc -->|Atomic Deductions| Redis
-        RAGSvc -->|Vector Search & Context| PGVec
-        RAGSvc -->|Cache Retrieval Results| Redis
-        GuardRail -->|Audit & Safety Logs| PG
-        LogSvc -->|Read/Stream Logs| MinIO
-        DocGen -->|Store Binary Files| MinIO
-        DocGen -->|Save Metadata| PG
-        QuestionEngine -->|CRUD Question Bank| PG
-        QuestionEngine -->|Similarity Check| PGVec
-        IntentEngine -->|Context Lookup| Redis
-
-        subgraph ExternalIntegrations["External Integrations"]
-            LLMs[AI Providers\nOpenAI, Gemini, Qwen, Groq]
-            Pay[Payment Gateways\nRazorpay, Stripe]
-            Email[Notification Service\nSMTP / Resend]
-        end
-
-        AIRouter -->|Async Streaming & Prompts| LLMs
-        Pay -->|Webhook Sync & Entitlements| CreditSvc
-        CreditSvc -->|Plan Activation & Alerts| Email
-        RAGSvc -->|Batch Embedding API| LLMs
-
-        LLMs -->|Token Usage Metrics| CreditSvc
-        Pay -->|Transaction Records| PG
-        Email -->|Delivery Status| PG
-
-        DocGen -->|Presigned URL Gen| MinIO
-        Celery -->|Job Results| Redis
+    subgraph Security_Gate ["Security Layer"]
+        direction LR
+        GW["API Gateway"]
+        MW["Auth Middleware"]
+        GW --> MW
     end
+    class Security_Gate gateway
+
+    subgraph API_Entry ["API Routes"]
+        direction LR
+        Public["Public (5014)"]
+        Admin["Admin (5012)"]
+    end
+    class API_Entry controller
+
+    subgraph Logic_Core ["Core Services"]
+        direction LR
+        Intent["Intent Engine"]
+        AIRouter["LiteLLM"]
+        RAG["RAG Pipeline"]
+        Credits["Credit Engine"]
+    end
+    class Logic_Core service
+
+    subgraph Async_Tasks ["Background Jobs"]
+        direction LR
+        Celery["Workers"]
+        Beat["Scheduler"]
+    end
+    class Async_Tasks worker
+
+    subgraph Persistence ["Data & Storage"]
+        direction LR
+        PG[("Postgres")]
+        Redis[("Redis")]
+        MinIO[("MinIO")]
+    end
+    class Persistence db
+
+    subgraph Cloud_API ["External APIs"]
+        direction LR
+        LLM["AI Models"]
+        Pay["Stripe/RZP"]
+        Mail["Resend"]
+    end
+    class Cloud_API external
+
+    %% Connections
+    MW --> API_Entry
+    API_Entry --> Logic_Core
+    
+    Logic_Core --> Persistence
+    Logic_Core --> Cloud_API
+    
+    Logic_Core --> Async_Tasks
+    Async_Tasks --> Persistence
+
+    %% Specific Logic Flows
+    Intent <--> Redis
+    AIRouter <--> LLM
+    Credits <--> Pay
+    RAG <--> PG
+    
+    %% Spacing Styles
+    style Security_Gate padding:15px
+    style API_Entry padding:15px
+    style Logic_Core padding:15px
+    style Async_Tasks padding:15px
+    style Persistence padding:15px
+    style Cloud_API padding:15px

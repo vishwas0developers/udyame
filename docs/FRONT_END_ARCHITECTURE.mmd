@@ -1,64 +1,74 @@
 graph TD
-    User["User"] -->|"Browser Request"| App["Next.js App"]
+    %% Global Styling & Clear Aesthetics
+    classDef user fill:#fff1f2,stroke:#e11d48,stroke-width:2px,color:#881337
+    classDef router fill:#f0f9ff,stroke:#0369a1,stroke-width:2px,color:#0c4a6e
+    classDef state fill:#f5f3ff,stroke:#7c3aed,stroke-width:2px,color:#4c1d95
+    classDef component fill:#ffffff,stroke:#475569,stroke-width:2px,color:#0f172a
+    classDef service fill:#ecfeff,stroke:#0891b2,stroke-width:2px,color:#083344
+    classDef external fill:#f0fdf4,stroke:#16a34a,stroke-width:2px,color:#14532d
 
-    subgraph "Frontend Architecture"
-        App --> Router["App Router"]
-        Router --> Dashboard["/dashboard"]
-        Router --> Planning["/planning"]
-        Router --> Workspace["/workspace"]
-        Router --> Admin["/admin"]
-        Router --> Billing["/billing"]
-        Router --> Plans["/plans"]
+    %% Entry Points
+    User["User (Browser)"]
+    class User user
 
-        subgraph "State & Data Layer"
-            UIState["Zustand Store\nUI State, Theme, Sidebar"]
-            ServerState["React Query\nServer Cache, Mutations"]
-        end
-
-        subgraph "Component Layer"
-            Chat["Chat Interface\nQ&A, Streaming, Self-Learn Feedback"]
-            AdminQueue["Admin Panel\nQuestion Queue, Model Registry"]
-            LogsView["Admin Logs\nReal-time Log Viewer (WS)"]
-            DocLib["Document Library\nGrid/List, Preview, Export"]
-            Paywall["Billing & Plans\nComparison, Checkout, Usage"]
-            CompanySelector["Company Workspace\nSidebar Nav, Smart Assistant"]
-        end
-
-        subgraph "Service & Network Layer"
-            APIClient["Axios API Client"]
-            Interceptors["Auth Interceptors\nJWT Refresh, 401 Retry"]
-            WSClient["WebSocket Client\nStreaming, Progress"]
-            Forms["React Hook Form\nValidation, Multi-step Wizard"]
-        end
-
-        Dashboard --> UIState
-        Dashboard --> CompanySelector
-        Workspace --> CompanySelector
-        Planning --> Chat
-        Admin --> AdminQueue
-        Admin --> LogsView
-        Billing --> Paywall
-        Plans --> Paywall
-
-        Dashboard --> ServerState
-        Planning --> ServerState
-        Workspace --> ServerState
-        Admin --> ServerState
-        Billing --> ServerState
-        Plans --> ServerState
-
-        Chat -->|"Form Submission"| Forms
-        AdminQueue -->|"CRUD Operations"| APIClient
-        Paywall -->|"Payment Flow"| APIClient
-        CompanySelector -->|"Company Switch"| ServerState
-        DocLib -->|"Download/Preview"| APIClient
-        Forms -->|"Validated Payload"| APIClient
-
-        APIClient --> Interceptors
-        Interceptors -->|"Real-time Events"| WSClient
-        Interceptors -->|"Cache Invalidation"| ServerState
-
-        WSClient -->|"Stream Updates"| UIState
-        ServerState -->|"Hydrate Components"| UIState
-        UIState -->|"Re-render Trigger"| Router
+    subgraph Router_Section ["Navigation Layer"]
+        direction LR
+        AppRouter["Next.js App Router"]
+        Routes["/dashboard, /admin, /billing"]
+        AppRouter --> Routes
     end
+    class Router_Section router
+
+    subgraph UI_Section ["UI Components"]
+        direction LR
+        Chat["Chat UI"]
+        Docs["Doc Library"]
+        Admin["Admin Panel"]
+        Sidebar["Sidebar"]
+    end
+    class UI_Section component
+
+    subgraph Data_Section ["State Management"]
+        direction LR
+        Zustand["Zustand Store"]
+        ReactQuery["React Query Cache"]
+    end
+    class Data_Section state
+
+    subgraph API_Section ["Network Services"]
+        direction LR
+        Axios["API Client (Axios)"]
+        WS["WebSocket (SSE)"]
+        Forms["Hook Forms"]
+    end
+    class API_Section service
+
+    subgraph Cloud_Section ["External Services"]
+        direction LR
+        AI["AI APIs"]
+        Pay["Payments"]
+        Auth["Firebase"]
+    end
+    class Cloud_Section external
+
+    %% Optimized Connections to prevent overlap
+    User --> AppRouter
+    Routes --> UI_Section
+    
+    UI_Section --> Zustand
+    UI_Section --> ReactQuery
+    
+    ReactQuery --> Axios
+    Chat --> Forms
+    Forms --> Axios
+    Chat <--> WS
+    
+    Axios --> Cloud_Section
+    WS --> Zustand
+
+    %% Spacing Styles
+    style Router_Section padding:20px
+    style UI_Section padding:20px
+    style Data_Section padding:20px
+    style API_Section padding:20px
+    style Cloud_Section padding:20px
