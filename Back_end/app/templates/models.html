@@ -2,78 +2,112 @@
 
 {% block title %}AI Model Management - Udyame Admin{% endblock %}
 
+{% block header %}AI Model Management{% endblock %}
+
 {% block content %}
 <div class="space-y-6">
     <div class="flex justify-between items-center">
-        <h1 class="text-2xl font-bold text-gray-900">AI Model Management</h1>
-        <button class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition flex items-center gap-2">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg>
+        <p class="text-slate-400">Configure and manage AI provider endpoints and fallback priorities.</p>
+        <button class="bg-indigo-600 text-white px-5 py-2.5 rounded-xl hover:bg-indigo-700 transition flex items-center gap-2 shadow-lg shadow-indigo-500/20 active:scale-95 font-medium">
+            <i class="fas fa-plus text-xs"></i>
             Add New Model
         </button>
     </div>
 
     <!-- Stats Overview -->
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-            <p class="text-sm text-gray-500 mb-1">Active Models</p>
-            <p class="text-3xl font-bold text-gray-900">{{ models|selectattr('is_active', 'equalto', True)|list|length }}</p>
+        <div class="bg-slate-800 p-6 rounded-2xl shadow-sm border border-slate-700">
+            <div class="flex items-center justify-between mb-4">
+                <p class="text-sm text-slate-400 font-medium">Active Models</p>
+                <i class="fas fa-check-circle text-emerald-500"></i>
+            </div>
+            <p class="text-3xl font-bold text-white">{{ models|selectattr('is_active', 'equalto', True)|list|length }}</p>
         </div>
-        <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-            <p class="text-sm text-gray-500 mb-1">Total Providers</p>
-            <p class="text-3xl font-bold text-gray-900">{{ models|map(attribute='provider')|unique|list|length }}</p>
+        <div class="bg-slate-800 p-6 rounded-2xl shadow-sm border border-slate-700">
+            <div class="flex items-center justify-between mb-4">
+                <p class="text-sm text-slate-400 font-medium">Total Providers</p>
+                <i class="fas fa-server text-indigo-400"></i>
+            </div>
+            <p class="text-3xl font-bold text-white">{{ models|map(attribute='provider')|unique|list|length }}</p>
         </div>
-        <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-            <p class="text-sm text-gray-500 mb-1">Average Cost (per 1k)</p>
-            <p class="text-3xl font-bold text-gray-900">₹0.12</p>
+        <div class="bg-slate-800 p-6 rounded-2xl shadow-sm border border-slate-700">
+            <div class="flex items-center justify-between mb-4">
+                <p class="text-sm text-slate-400 font-medium">Avg Latency</p>
+                <i class="fas fa-bolt text-amber-400"></i>
+            </div>
+            <p class="text-3xl font-bold text-white">840ms</p>
         </div>
     </div>
 
     <!-- Models Table -->
-    <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-        <table class="min-w-full divide-y divide-gray-200">
-            <thead class="bg-gray-50">
-                <tr>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Model Name</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Provider</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cost (1k)</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Priority</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                    <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-                </tr>
-            </thead>
-            <tbody class="bg-white divide-y divide-gray-200">
-                {% for model in models %}
-                <tr>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <div class="text-sm font-medium text-gray-900">{{ model.name }}</div>
-                        <div class="text-xs text-gray-500">{{ model.model_id }}</div>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        <span class="px-2 py-1 bg-gray-100 rounded text-xs font-medium uppercase">{{ model.provider }}</span>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">₹{{ "%.4f"|format(model.cost_per_1k_tokens) }}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ model.fallback_priority }}</td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        {% if model.is_active %}
-                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Active</span>
-                        {% else %}
-                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">Inactive</span>
-                        {% endif %}
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                        <button class="text-blue-600 hover:text-blue-900 mr-3">Edit</button>
-                        <button class="text-red-600 hover:text-red-900">Disable</button>
-                    </td>
-                </tr>
-                {% else %}
-                <tr>
-                    <td colspan="6" class="px-6 py-10 text-center text-gray-500">
-                        No models configured. Click "Add New Model" to get started.
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+    <div class="bg-slate-800 rounded-2xl shadow-xl border border-slate-700 overflow-hidden">
+        <div class="px-6 py-4 border-b border-slate-700 bg-slate-800/50">
+            <h3 class="font-semibold text-white">Configured Model Inventory</h3>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-slate-700">
+                <thead class="bg-slate-900/50">
+                    <tr>
+                        <th class="px-6 py-4 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider">Model Identity</th>
+                        <th class="px-6 py-4 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider">Provider</th>
+                        <th class="px-6 py-4 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider">Cost (1k)</th>
+                        <th class="px-6 py-4 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider">Priority</th>
+                        <th class="px-6 py-4 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider">Status</th>
+                        <th class="px-6 py-4 text-right text-xs font-semibold text-slate-400 uppercase tracking-wider">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-700 bg-slate-800">
+                    {% for model in models %}
+                    <tr class="hover:bg-slate-700/30 transition-colors">
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm font-semibold text-white">{{ model.name }}</div>
+                            <div class="text-xs text-slate-500">{{ model.model_id }}</div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="px-2.5 py-1 bg-indigo-500/10 text-indigo-400 rounded-lg text-xs font-bold uppercase border border-indigo-500/20">
+                                {{ model.provider }}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-300">
+                            ₹{{ "%.4f"|format(model.cost_per_1k_tokens) }}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="flex items-center text-sm text-slate-400">
+                                <span class="h-1.5 w-1.5 rounded-full bg-slate-500 mr-2"></span>
+                                Level {{ model.fallback_priority }}
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            {% if model.is_active %}
+                            <span class="px-2.5 py-1 inline-flex text-xs leading-5 font-bold rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                                <i class="fas fa-circle text-[8px] mr-1.5 self-center"></i> Active
+                            </span>
+                            {% else %}
+                            <span class="px-2.5 py-1 inline-flex text-xs leading-5 font-bold rounded-full bg-red-500/10 text-red-400 border border-red-500/20">
+                                <i class="fas fa-circle text-[8px] mr-1.5 self-center"></i> Inactive
+                            </span>
+                            {% endif %}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                            <button class="text-indigo-400 hover:text-indigo-300 bg-indigo-500/5 p-2 rounded-lg mr-2 transition">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="text-red-400 hover:text-red-300 bg-red-500/5 p-2 rounded-lg transition">
+                                <i class="fas fa-power-off"></i>
+                            </button>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="6" class="px-6 py-12 text-center text-slate-500 italic">
+                            <div class="mb-2"><i class="fas fa-robot text-4xl text-slate-700"></i></div>
+                            No models configured. Click "Add New Model" to get started.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>
 {% endblock %}
