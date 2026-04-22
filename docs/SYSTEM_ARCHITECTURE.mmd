@@ -1,7 +1,7 @@
 graph TD
     %% Global Styling & Rich Aesthetics
     classDef client fill:#f0f9ff,stroke:#0369a1,stroke-width:2px,color:#0c4a6e
-    classDef frontend fill:#e0e7ff,stroke:#4338ca,stroke-width:2px,color:#1e1b4b
+    classDef frontend fill:#e0e7ff,stroke:#4338ca,stroke-width:2px,color:#1e3a8a
     classDef backend fill:#f8fafc,stroke:#334155,stroke-width:2px,color:#0f172a
     classDef infra fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#451a03
     classDef external fill:#dcfce7,stroke:#15803d,stroke-width:2px,color:#064e3b
@@ -62,9 +62,9 @@ graph TD
 
         subgraph Infrastructure_Nodes ["Persistence & Storage"]
             direction LR
-            Postgres_DB[("PostgreSQL 16")]
+            Postgres_DB[("PostgreSQL 15")]
             Redis_Nodes[("Redis 7")]
-            MinIO_Nodes[("MinIO")]
+            MinIO_Nodes[("MinIO (Object Storage)")]
         end
         class Infrastructure_Nodes infra
 
@@ -84,7 +84,7 @@ graph TD
     end
     class External_Services external
 
-    %% Connections - Optimized with variable lengths to prevent spaghetti
+    %% Connections - Optimized for MinIO Integration Standards
     run_bat -- "Local Testing" --> End_User
     run_bat -- "Local Testing" --> Admin_User
 
@@ -96,6 +96,10 @@ graph TD
     
     Admin_UI_SSR ----> Intent_Engine
     FastAPI_Entry ----> Intent_Engine
+    
+    %% MinIO Specific Connections (Security Compliant)
+    App_Router -.->|"HTTPS (Presigned Link Only)"| MinIO_Nodes
+    FastAPI_Entry ==>|"Boto3 SDK / Presigned URL Gen"| MinIO_Nodes
     
     %% Infrastructure Connections
     Intent_Engine <--> Postgres_DB

@@ -111,9 +111,13 @@ The backend of **Udyame AI** is a high-performance orchestration engine, adminis
     7. Risk & Compliance (Top 3 Risks + Mitigation, Regulatory Checklist: GST/FSSAI/MSME, Insurance).
     8. Next Steps & CTA (Immediate Actions, Required Approvals, Contact + Follow-up).
 - **Tone Adapter**: Investor Docs → Formal English; Client Proposals → Persuasive Hinglish; Internal Plans → Simple Hindi/English mix.
-- **Storage**: Binary files in MinIO with metadata in PostgreSQL.
+- **Storage**: Binary files in MinIO (S3-compatible) with metadata in PostgreSQL.
+- **MinIO Bucket Strategy**:
+    - `udyme-documents`: Business plans, proposals, and user assets.
+    - `udyme-templates`: Static rendering templates.
+    - `udyme-audit-logs`: System logs and audit snapshots.
+- **Security**: Direct access restricted. Frontend uses **TTL-based Presigned URLs** for all object interactions.
 - Support for PDF (WeasyPrint/Playwright) and Excel export.
-- Presigned MinIO URL generation for downloads, versioning, and metadata tagging.
 - Async rendering via Celery task queue with progress tracking.
 
 ### 4.8 Integrated Admin Panel (Internal)

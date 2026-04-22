@@ -29,6 +29,7 @@ graph TD
         RAG["RAG Pipeline"]
         Credits["Credit Engine"]
         Logger["Log Service (WS Tailing)"]
+        DocGen["Doc Generator (PDF/Excel)"]
     end
     class Logic_Core service
 
@@ -44,13 +45,13 @@ graph TD
         direction LR
         PG[("Postgres (pgvector)")]
         Redis[("Redis (Cache)")]
-        MinIO[("MinIO (Object Store)")]
+        MinIO[("MinIO (Object Storage)")]
     end
     class Persistence db
 
     subgraph Cloud_API ["External Services"]
         direction LR
-        LLM["AI Providers"]
+        LLM["AI Models"]
         Pay["Stripe/Razorpay"]
         Mail["Resend/SMTP"]
     end
@@ -68,11 +69,15 @@ graph TD
     Beat --> Redis
     Migrate --> PG
     
+    %% MinIO Specific Integration (S3 Standard)
+    DocGen ==>|"Boto3 / Presigned URL"| MinIO
+    Logger ==>|"Boto3 / Upload Logs"| MinIO
+    
     %% Specific Data Flows
-    Logger <--> MinIO
     Intent <--> Redis
     AIRouter <--> LLM
     Credits <--> Pay
+    RAG <--> PG
     
     %% Spacing Styles
     style Security_Gate padding:15px
