@@ -95,15 +95,29 @@ class QuestionBank(Base):
     admin_approved_by = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
 
+class AIProvider(Base):
+    __tablename__ = "ai_providers"
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    name = Column(String(100), nullable=False)  # e.g., "My Custom OpenAI"
+    provider_type = Column(String(50), nullable=False)  # openai, gemini, ollama, custom-openai
+    api_key = Column(String(500), nullable=True)
+    base_url = Column(String(500), nullable=True)
+    is_active = Column(Boolean, default=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    models = relationship("AIModel", back_populates="provider_rel", cascade="all, delete-orphan")
+
 class AIModel(Base):
     __tablename__ = "ai_models"
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    name = Column(String(100), unique=True, nullable=False)  # Display Name
-    provider = Column(String(50))  # openai, gemini, qwen, etc.
-    api_endpoint = Column(String(500), nullable=True)
+    provider_id = Column(UUID(as_uuid=True), ForeignKey("ai_providers.id", ondelete="CASCADE"), nullable=True)
+    name = Column(String(100), nullable=False)  # Display Name
+    provider = Column(String(50))  # Legacy/Cache: openai, gemini, etc.
     model_id = Column(String(100), nullable=False)  # Technical ID
     is_active = Column(Boolean, default=True)
     is_default = Column(Boolean, default=False)
+    is_predefined = Column(Boolean, default=False)
     
     # Granular Capabilities
     supports_vision = Column(Boolean, default=False)
@@ -121,6 +135,8 @@ class AIModel(Base):
     cost_per_1k_tokens = Column(Numeric(10, 4), default=0.0000)
     fallback_priority = Column(Integer, default=99)
     created_at = Column(DateTime, default=datetime.utcnow)
+
+    provider_rel = relationship("AIProvider", back_populates="models")
 
 class CreditLedger(Base):
     __tablename__ = "credit_ledger"

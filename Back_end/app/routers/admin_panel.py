@@ -12,7 +12,7 @@ from fastapi.templating import Jinja2Templates
 
 from app.db.session import get_db
 from app.routers.deps import get_current_user
-from app.models.all_models import User, QuestionBank, AIModel, CreditLedger, SubscriptionPlan
+from app.models.all_models import User, QuestionBank, AIModel, CreditLedger, SubscriptionPlan, AIProvider
 from app.core import security
 from app.services import ai_discovery
 
@@ -37,9 +37,8 @@ class PlanModify(BaseModel):
 
 class ModelSave(BaseModel):
     name: str
-    provider: str
+    provider_id: UUID
     model_id: str
-    api_endpoint: Optional[str] = None
     is_active: bool = True
     is_default: bool = False
     supports_vision: bool = False
@@ -51,6 +50,13 @@ class ModelSave(BaseModel):
     supports_thinking: bool = False
     thinking_details: Optional[str] = None
     fallback_priority: int = 99
+
+class ProviderSave(BaseModel):
+    name: str
+    provider_type: str
+    api_key: Optional[str] = None
+    base_url: Optional[str] = None
+    is_active: bool = True
 
 # --- Admin UI Routes ---
 
@@ -179,10 +185,12 @@ async def admin_models(request: Request, db: Session = Depends(get_db)):
         return RedirectResponse(url="/login?next=/models")
         
     models = db.query(AIModel).order_by(AIModel.fallback_priority).all()
+    providers = db.query(AIProvider).all()
     return templates.TemplateResponse("models.html", {
         "request": request, 
         "active_page": "models",
-        "models": models
+        "models": models,
+        "providers": providers
     })
 
 @router.get("/users", response_class=HTMLResponse)
@@ -338,13 +346,50 @@ def review_question(
     db.commit()
     return {"message": f"Question {update.action} successfully"}
 
+# --- Provider Management API ---
+
+@router.get("/api/admin/providers/list")
+async def list_providers(request: Request, db: Session = Depends(get_db)):
+    if not check_admin_auth(request):
+        raise HTTPException(status_code=401)
+    return db.query(AIProvider).all()
+
+@router.post("/api/admin/providers/save")
+async def save_provider(request: Request, data: ProviderSave, db: Session = Depends(get_db)):
+    if not check_admin_auth(request):
+        raise HTTPException(status_code=401)
+    
+    provider = db.query(AIProvider).filter(AIProvider.name == data.name).first()
+    if not provider:
+        provider = AIProvider(name=data.name)
+        db.add(provider)
+    
+    provider.provider_type = data.provider_type
+    provider.api_key = data.api_key
+    provider.base_url = data.base_url
+    provider.is_active = data.is_active
+    
+    db.commit()
+    return {"status": "success", "message": "Provider saved successfully"}
+
+@router.post("/api/admin/providers/delete/{provider_id}")
+async def delete_provider(provider_id: UUID, request: Request, db: Session = Depends(get_db)):
+    if not check_admin_auth(request):
+        raise HTTPException(status_code=401)
+    
+    provider = db.query(AIProvider).filter(AIProvider.id == provider_id).first()
+    if provider:
+        db.delete(provider)
+        db.commit()
+    return {"status": "success"}
+
 # --- Model Management API ---
 
 @router.get("/api/admin/models/list")
 async def list_models(request: Request, db: Session = Depends(get_db)):
     if not check_admin_auth(request):
         raise HTTPException(status_code=401)
-    models = db.query(AIModel).order_by(AIModel.provider, AIModel.fallback_priority).all()
+    models = db.query(AIModel).order_by(AIModel.fallback_priority).all()
     return models
 
 @router.post("/api/admin/models/save")
@@ -352,18 +397,24 @@ async def save_model(request: Request, model_data: ModelSave, db: Session = Depe
     if not check_admin_auth(request):
         raise HTTPException(status_code=401)
     
-    # Check if we are updating or creating
-    model = db.query(AIModel).filter(AIModel.model_id == model_data.model_id, AIModel.provider == model_data.provider).first()
+    provider = db.query(AIProvider).filter(AIProvider.id == model_data.provider_id).first()
+    if not provider:
+        raise HTTPException(status_code=404, detail="Provider not found")
+
+    model = db.query(AIModel).filter(
+        AIModel.model_id == model_data.model_id, 
+        AIModel.provider_id == model_data.provider_id
+    ).first()
     
     if not model:
         model = AIModel(
             model_id=model_data.model_id,
-            provider=model_data.provider
+            provider_id=model_data.provider_id,
+            provider=provider.provider_type
         )
         db.add(model)
     
     model.name = model_data.name
-    model.api_endpoint = model_data.api_endpoint
     model.is_active = model_data.is_active
     model.is_default = model_data.is_default
     model.supports_vision = model_data.supports_vision
@@ -376,10 +427,9 @@ async def save_model(request: Request, model_data: ModelSave, db: Session = Depe
     model.thinking_details = model_data.thinking_details
     model.fallback_priority = model_data.fallback_priority
     
-    # If this is set as default, unset other defaults for this provider
     if model.is_default:
         db.query(AIModel).filter(
-            AIModel.provider == model.provider, 
+            AIModel.provider_id == model.provider_id, 
             AIModel.id != model.id
         ).update({"is_default": False})
     
@@ -392,38 +442,23 @@ async def delete_model(model_id: UUID, request: Request, db: Session = Depends(g
         raise HTTPException(status_code=401)
     
     model = db.query(AIModel).filter(AIModel.id == model_id).first()
-    if not model:
-        raise HTTPException(status_code=404, detail="Model not found")
-    
-    db.delete(model)
-    db.commit()
-    return {"status": "success", "message": "Model deleted successfully"}
+    if model:
+        db.delete(model)
+        db.commit()
+    return {"status": "success"}
 
-@router.post("/api/admin/models/set-default/{model_id}")
-async def set_default_model(model_id: UUID, request: Request, db: Session = Depends(get_db)):
+@router.get("/api/admin/models/fetch/{provider_id}")
+async def fetch_provider_models(provider_id: UUID, request: Request, db: Session = Depends(get_db)):
     if not check_admin_auth(request):
         raise HTTPException(status_code=401)
     
-    model = db.query(AIModel).filter(AIModel.id == model_id).first()
-    if not model:
-        raise HTTPException(status_code=404, detail="Model not found")
-    
-    # Unset others
-    db.query(AIModel).filter(
-        AIModel.provider == model.provider,
-        AIModel.id != model.id
-    ).update({"is_default": False})
-    
-    model.is_default = True
-    db.commit()
-    return {"status": "success", "message": f"{model.name} set as default for {model.provider}"}
-
-@router.get("/api/admin/models/fetch/{provider}")
-async def fetch_provider_models(provider: str, request: Request):
-    if not check_admin_auth(request):
-        raise HTTPException(status_code=401)
-    
-    # In a real app, we might want to allow passing a temporary key for discovery
-    # but for now we rely on the backend environment variables
-    models = await ai_discovery.fetch_models_for_provider(provider)
+    provider = db.query(AIProvider).filter(AIProvider.id == provider_id).first()
+    if not provider:
+        raise HTTPException(status_code=404, detail="Provider not found")
+        
+    models = await ai_discovery.fetch_models_for_provider(
+        provider.provider_type, 
+        api_key=provider.api_key, 
+        base_url=provider.base_url
+    )
     return models

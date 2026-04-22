@@ -1,455 +1,484 @@
 {% extends "layout.html" %}
 
-{% block title %}AI Model Management - Udyame Admin{% endblock %}
+{% block title %}AI Infrastructure - Udyame Admin{% endblock %}
 
-{% block header %}AI Model Management{% endblock %}
+{% block header %}AI Infrastructure Management{% endblock %}
 
 {% block content %}
 <div class="space-y-6">
-    <div class="flex justify-between items-center">
-        <p class="text-slate-400">Configure and manage AI provider endpoints and fallback priorities.</p>
-        <button onclick="openAddModelModal()" class="bg-indigo-600 text-white px-5 py-2.5 rounded-xl hover:bg-indigo-700 transition flex items-center gap-2 shadow-lg shadow-indigo-500/20 active:scale-95 font-medium">
-            <i class="fas fa-plus text-xs"></i>
-            Add New Model
+    <!-- Tab Navigation -->
+    <div class="flex border-b border-slate-700 gap-8">
+        <button onclick="switchTab('models')" id="tab-models" class="px-4 py-3 text-sm font-bold border-b-2 border-indigo-500 text-indigo-400 transition-all">
+            <i class="fas fa-robot mr-2"></i>AI Models
+        </button>
+        <button onclick="switchTab('providers')" id="tab-providers" class="px-4 py-3 text-sm font-bold border-b-2 border-transparent text-slate-400 hover:text-white transition-all">
+            <i class="fas fa-server mr-2"></i>AI Providers
         </button>
     </div>
 
-    <!-- Stats Overview -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div class="bg-slate-800 p-6 rounded-2xl shadow-sm border border-slate-700">
-            <div class="flex items-center justify-between mb-4">
-                <p class="text-sm text-slate-400 font-medium">Active Models</p>
-                <i class="fas fa-check-circle text-emerald-500"></i>
+    <!-- Models Tab -->
+    <div id="section-models" class="space-y-6">
+        <div class="flex justify-between items-center">
+            <div>
+                <h2 class="text-xl font-bold text-white">Model Inventory</h2>
+                <p class="text-slate-400 text-sm">Configure and prioritize models across your registered providers.</p>
             </div>
-            <p class="text-3xl font-bold text-white">{{ models|selectattr('is_active', 'equalto', True)|list|length }}</p>
+            <button onclick="openModelModal()" class="bg-indigo-600 text-white px-5 py-2.5 rounded-xl hover:bg-indigo-700 transition flex items-center gap-2 shadow-lg shadow-indigo-500/20 active:scale-95 font-medium">
+                <i class="fas fa-plus text-xs"></i>Add Model
+            </button>
         </div>
-        <div class="bg-slate-800 p-6 rounded-2xl shadow-sm border border-slate-700">
-            <div class="flex items-center justify-between mb-4">
-                <p class="text-sm text-slate-400 font-medium">Total Providers</p>
-                <i class="fas fa-server text-indigo-400"></i>
+
+        <div class="bg-slate-800 rounded-2xl shadow-xl border border-slate-700 overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-slate-700">
+                    <thead class="bg-slate-900/50">
+                        <tr>
+                            <th class="px-6 py-4 text-left text-xs font-semibold text-slate-400 uppercase">Model Identity</th>
+                            <th class="px-6 py-4 text-left text-xs font-semibold text-slate-400 uppercase">Provider</th>
+                            <th class="px-6 py-4 text-left text-xs font-semibold text-slate-400 uppercase">Capabilities</th>
+                            <th class="px-6 py-4 text-left text-xs font-semibold text-slate-400 uppercase">Priority</th>
+                            <th class="px-6 py-4 text-left text-xs font-semibold text-slate-400 uppercase">Status</th>
+                            <th class="px-6 py-4 text-right text-xs font-semibold text-slate-400 uppercase">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-700 bg-slate-800">
+                        {% for model in models %}
+                        <tr class="hover:bg-slate-700/30 transition-colors">
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="text-sm font-semibold text-white">{{ model.name }}</div>
+                                <div class="text-xs text-slate-500">{{ model.model_id }}</div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <span class="px-2.5 py-1 bg-indigo-500/10 text-indigo-400 rounded-lg text-xs font-bold uppercase border border-indigo-500/20">
+                                    {{ model.provider_rel.name if model.provider_rel else model.provider }}
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="flex items-center gap-3">
+                                    {% if model.supports_text %}<i class="fas fa-font text-slate-500 hover:text-indigo-400 transition" title="Text: {{ model.text_details or 'Supported' }}"></i>{% endif %}
+                                    {% if model.supports_vision %}<i class="fas fa-eye text-slate-500 hover:text-indigo-400 transition" title="Vision: {{ model.vision_details or 'Supported' }}"></i>{% endif %}
+                                    {% if model.supports_tools %}<i class="fas fa-tools text-slate-500 hover:text-indigo-400 transition" title="Tools: {{ model.tools_details or 'Supported' }}"></i>{% endif %}
+                                    {% if model.supports_thinking %}<i class="fas fa-brain text-slate-500 hover:text-indigo-400 transition" title="Thinking: {{ model.thinking_details or 'Supported' }}"></i>{% endif %}
+                                </div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="flex items-center text-sm text-slate-400">
+                                    <span class="h-1.5 w-1.5 rounded-full bg-slate-500 mr-2"></span>Level {{ model.fallback_priority }}
+                                </div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                {% if model.is_active %}
+                                <span class="px-2.5 py-1 inline-flex text-xs font-bold rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Active</span>
+                                {% else %}
+                                <span class="px-2.5 py-1 inline-flex text-xs font-bold rounded-full bg-red-500/10 text-red-400 border border-red-500/20">Inactive</span>
+                                {% endif %}
+                                {% if model.is_default %}<span class="ml-2 px-2 py-0.5 bg-amber-500/10 text-amber-500 rounded text-[10px] font-bold">DEFAULT</span>{% endif %}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                <button onclick='openEditModelModal("{{ model|tojson }}")' class="text-indigo-400 hover:text-indigo-300 bg-indigo-500/5 p-2 rounded-lg mr-2 transition"><i class="fas fa-edit"></i></button>
+                                <button onclick="deleteModel('{{ model.id }}')" class="text-red-400 hover:text-red-300 bg-red-500/5 p-2 rounded-lg transition"><i class="fas fa-trash-alt"></i></button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
             </div>
-            <p class="text-3xl font-bold text-white">{{ models|map(attribute='provider')|unique|list|length }}</p>
-        </div>
-        <div class="bg-slate-800 p-6 rounded-2xl shadow-sm border border-slate-700">
-            <div class="flex items-center justify-between mb-4">
-                <p class="text-sm text-slate-400 font-medium">Avg Latency</p>
-                <i class="fas fa-bolt text-amber-400"></i>
-            </div>
-            <p class="text-3xl font-bold text-white">840ms</p>
         </div>
     </div>
 
-    <!-- Models Table -->
-    <div class="bg-slate-800 rounded-2xl shadow-xl border border-slate-700 overflow-hidden">
-        <div class="px-6 py-4 border-b border-slate-700 bg-slate-800/50">
-            <h3 class="font-semibold text-white">Configured Model Inventory</h3>
+    <!-- Providers Tab -->
+    <div id="section-providers" class="space-y-6 hidden">
+        <div class="flex justify-between items-center">
+            <div>
+                <h2 class="text-xl font-bold text-white">API Providers</h2>
+                <p class="text-slate-400 text-sm">Register and configure external AI service providers and local LLMs.</p>
+            </div>
+            <button onclick="openProviderModal()" class="bg-emerald-600 text-white px-5 py-2.5 rounded-xl hover:bg-emerald-700 transition flex items-center gap-2 shadow-lg shadow-emerald-500/20 active:scale-95 font-medium">
+                <i class="fas fa-plus text-xs"></i>Add Provider
+            </button>
         </div>
-        <div class="overflow-x-auto">
-            <table class="min-w-full divide-y divide-slate-700">
-                <thead class="bg-slate-900/50">
-                    <tr>
-                        <th class="px-6 py-4 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider">Model Identity</th>
-                        <th class="px-6 py-4 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider">Provider</th>
-                        <th class="px-6 py-4 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider">Capabilities</th>
-                        <th class="px-6 py-4 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider">Priority</th>
-                        <th class="px-6 py-4 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider">Status</th>
-                        <th class="px-6 py-4 text-right text-xs font-semibold text-slate-400 uppercase tracking-wider">Actions</th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y divide-slate-700 bg-slate-800">
-                    {% for model in models %}
-                    <tr class="hover:bg-slate-700/30 transition-colors">
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <div class="text-sm font-semibold text-white">{{ model.name }}</div>
-                            <div class="text-xs text-slate-500">{{ model.model_id }}</div>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <span class="px-2.5 py-1 bg-indigo-500/10 text-indigo-400 rounded-lg text-xs font-bold uppercase border border-indigo-500/20">
-                                {{ model.provider }}
-                            </span>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <div class="flex items-center gap-3">
-                                {% if model.supports_text %}
-                                <i class="fas fa-font text-slate-500 hover:text-indigo-400 transition" title="Text: {{ model.text_details or 'Supported' }}"></i>
-                                {% endif %}
-                                {% if model.supports_vision %}
-                                <i class="fas fa-eye text-slate-500 hover:text-indigo-400 transition" title="Vision: {{ model.vision_details or 'Supported' }}"></i>
-                                {% endif %}
-                                {% if model.supports_tools %}
-                                <i class="fas fa-tools text-slate-500 hover:text-indigo-400 transition" title="Tools: {{ model.tools_details or 'Supported' }}"></i>
-                                {% endif %}
-                                {% if model.supports_thinking %}
-                                <i class="fas fa-brain text-slate-500 hover:text-indigo-400 transition" title="Thinking: {{ model.thinking_details or 'Supported' }}"></i>
-                                {% endif %}
-                            </div>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <div class="flex items-center text-sm text-slate-400">
-                                <span class="h-1.5 w-1.5 rounded-full bg-slate-500 mr-2"></span>
-                                Level {{ model.fallback_priority }}
-                            </div>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            {% if model.is_active %}
-                            <span class="px-2.5 py-1 inline-flex text-xs leading-5 font-bold rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                                <i class="fas fa-circle text-[8px] mr-1.5 self-center"></i> Active
-                            </span>
-                            {% else %}
-                            <span class="px-2.5 py-1 inline-flex text-xs leading-5 font-bold rounded-full bg-red-500/10 text-red-400 border border-red-500/20">
-                                <i class="fas fa-circle text-[8px] mr-1.5 self-center"></i> Inactive
-                            </span>
-                            {% endif %}
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                            <button onclick='openEditModal("{{ model|tojson }}")' class="text-indigo-400 hover:text-indigo-300 bg-indigo-500/5 p-2 rounded-lg mr-2 transition" title="Edit Model">
-                                <i class="fas fa-edit"></i>
-                            </button>
-                            <button onclick="setAsDefault('{{ model.id }}')" class="{% if model.is_default %}text-emerald-400 bg-emerald-500/10{% else %}text-slate-400 bg-slate-500/5{% endif %} p-2 rounded-lg mr-2 transition" title="Set as Default">
-                                <i class="fas fa-star"></i>
-                            </button>
-                            <button onclick="deleteModel('{{ model.id }}')" class="text-red-400 hover:text-red-300 bg-red-500/5 p-2 rounded-lg transition" title="Delete Model">
-                                <i class="fas fa-trash-alt"></i>
-                            </button>
-                        </td>
-                    </tr>
-                    {% else %}
-                    <tr>
-                        <td colspan="6" class="px-6 py-12 text-center text-slate-500 italic">
-                            <div class="mb-2"><i class="fas fa-robot text-4xl text-slate-700"></i></div>
-                            No models configured. Click "Add New Model" to get started.
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {% for provider in providers %}
+            <div class="bg-slate-800 border border-slate-700 rounded-2xl p-6 space-y-4 hover:border-indigo-500/50 transition-all group">
+                <div class="flex justify-between items-start">
+                    <div class="p-3 bg-indigo-500/10 rounded-xl text-indigo-400">
+                        <i class="fas fa-server text-xl"></i>
+                    </div>
+                    <div class="flex gap-2">
+                        <button onclick='openEditProviderModal("{{ provider|tojson }}")' class="text-slate-500 hover:text-indigo-400 p-1 transition"><i class="fas fa-edit"></i></button>
+                        <button onclick="deleteProvider('{{ provider.id }}')" class="text-slate-500 hover:text-red-400 p-1 transition"><i class="fas fa-trash-alt"></i></button>
+                    </div>
+                </div>
+                <div>
+                    <h3 class="text-lg font-bold text-white">{{ provider.name }}</h3>
+                    <p class="text-xs text-slate-500 uppercase tracking-widest font-bold">{{ provider.provider_type }}</p>
+                </div>
+                <div class="space-y-2">
+                    <div class="flex justify-between text-sm">
+                        <span class="text-slate-500">Endpoint:</span>
+                        <span class="text-slate-300 truncate max-w-[150px]">{{ provider.base_url or 'Default' }}</span>
+                    </div>
+                    <div class="flex justify-between text-sm">
+                        <span class="text-slate-500">Models:</span>
+                        <span class="text-slate-300">{{ provider.models|length }} Configured</span>
+                    </div>
+                </div>
+                <div class="pt-4 border-t border-slate-700 flex justify-between items-center">
+                    <span class="px-2 py-1 {{ 'bg-emerald-500/10 text-emerald-400' if provider.is_active else 'bg-red-500/10 text-red-400' }} rounded-lg text-[10px] font-bold uppercase tracking-tighter">
+                        {{ 'Active' if provider.is_active else 'Disabled' }}
+                    </span>
+                </div>
+            </div>
+            {% endfor %}
         </div>
+    </div>
+</div>
+
+<!-- Add/Edit Provider Modal -->
+<div id="providerModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-800 w-full max-w-md rounded-3xl shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200">
+        <div class="px-8 py-6 border-b border-slate-800 bg-slate-900/50 flex justify-between items-center">
+            <h3 id="providerModalTitle" class="text-xl font-bold text-white">Add AI Provider</h3>
+            <button onclick="closeProviderModal()" class="text-slate-500 hover:text-white transition"><i class="fas fa-times"></i></button>
+        </div>
+        <form id="providerForm" onsubmit="saveProvider(event)" class="p-8 space-y-6">
+            <div class="space-y-2">
+                <label class="text-xs font-bold text-slate-400 uppercase">Provider Name</label>
+                <input type="text" id="p_name" required placeholder="e.g. My Groq API" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-indigo-500 outline-none transition">
+            </div>
+            <div class="space-y-2">
+                <label class="text-xs font-bold text-slate-400 uppercase">Provider Type</label>
+                <select id="p_type" onchange="updateUrlPreset()" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white outline-none cursor-pointer">
+                    <option value="openai">OpenAI (Standard)</option>
+                    <option value="gemini">Google Gemini</option>
+                    <option value="groq">Groq (Fast)</option>
+                    <option value="openrouter">OpenRouter</option>
+                    <option value="custom-openai">Custom OpenAI-Compatible</option>
+                    <option value="ollama">Ollama (Local)</option>
+                    <option value="lm_studio">LM Studio (Local)</option>
+                </select>
+            </div>
+            <div class="space-y-2">
+                <label class="text-xs font-bold text-slate-400 uppercase">API Key</label>
+                <input type="password" id="p_key" placeholder="Enter API Key" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-indigo-500 outline-none transition">
+            </div>
+            <div class="space-y-2">
+                <label class="text-xs font-bold text-slate-400 uppercase">Base API URL (Required)</label>
+                <input type="text" id="p_url" required placeholder="e.g. https://api.openai.com/v1" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-indigo-500 outline-none transition">
+                <p class="text-[10px] text-slate-500 italic">This URL is stored in the database and used for all requests.</p>
+            </div>
+            <div class="flex items-center gap-3">
+                <input type="checkbox" id="p_active" checked class="w-5 h-5 rounded bg-slate-800 border-slate-700 text-indigo-600">
+                <label for="p_active" class="text-sm text-slate-300 font-medium">Provider is Active</label>
+            </div>
+            <div class="pt-4 flex gap-4">
+                <button type="button" onclick="closeProviderModal()" class="flex-1 px-6 py-3 rounded-xl bg-slate-800 text-slate-300 font-bold hover:bg-slate-700 transition">Cancel</button>
+                <button type="submit" class="flex-[2] px-6 py-3 rounded-xl bg-indigo-600 text-white font-bold hover:bg-indigo-700 transition">Save Provider</button>
+            </div>
+        </form>
     </div>
 </div>
 
 <!-- Add/Edit Model Modal -->
 <div id="modelModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
     <div class="bg-slate-900 border border-slate-800 w-full max-w-2xl rounded-3xl shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200">
-        <div class="px-8 py-6 border-b border-slate-800 flex justify-between items-center bg-slate-900/50">
-            <div>
-                <h3 id="modalTitle" class="text-xl font-bold text-white">Add New AI Model</h3>
-                <p class="text-slate-400 text-sm mt-1">Configure capabilities and endpoints for your AI provider.</p>
-            </div>
-            <button onclick="closeAddModelModal()" class="text-slate-500 hover:text-white transition">
-                <i class="fas fa-times text-xl"></i>
-            </button>
+        <div class="px-8 py-6 border-b border-slate-800 bg-slate-900/50 flex justify-between items-center">
+            <h3 id="modelModalTitle" class="text-xl font-bold text-white">Add AI Model</h3>
+            <button onclick="closeModelModal()" class="text-slate-500 hover:text-white transition"><i class="fas fa-times"></i></button>
         </div>
-        
         <form id="modelForm" onsubmit="saveModel(event)" class="p-8 space-y-6 max-h-[70vh] overflow-y-auto custom-scrollbar">
-            <input type="hidden" id="edit_model_id">
-            
+            <input type="hidden" id="m_edit_id">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <!-- Provider Selection -->
                 <div class="space-y-2">
-                    <label class="text-xs font-bold text-slate-400 uppercase tracking-widest">Provider</label>
-                    <select id="provider" name="provider" onchange="handleProviderChange()" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-indigo-500 outline-none transition appearance-none cursor-pointer">
-                        <option value="gemini">Google Gemini</option>
-                        <option value="openai">OpenAI</option>
-                        <option value="ollama">Ollama (Local)</option>
-                        <option value="lm_studio">LM Studio (Local)</option>
+                    <label class="text-xs font-bold text-slate-400 uppercase">Target Provider</label>
+                    <select id="m_provider" onchange="handleProviderSelect()" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white outline-none">
+                        <option value="">-- Select Provider --</option>
+                        {% for provider in providers %}
+                        <option value="{{ provider.id }}" data-type="{{ provider.provider_type }}">{{ provider.name }}</option>
+                        {% endfor %}
                     </select>
                 </div>
-
-                <!-- Discovered Models (Auto-Fetch) -->
+                <!-- Discovery Mode -->
                 <div class="space-y-2">
-                    <label class="text-xs font-bold text-slate-400 uppercase tracking-widest">Auto-Discovery</label>
+                    <label class="text-xs font-bold text-slate-400 uppercase">Model Discovery</label>
                     <div class="relative">
-                        <select id="discovered_models" onchange="applyDiscoveredModel()" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-indigo-500 outline-none transition appearance-none cursor-pointer">
-                            <option value="">Select provider to fetch...</option>
+                        <select id="m_discovery" onchange="applyDiscovery()" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white outline-none appearance-none">
+                            <option value="">Select Discovery Method...</option>
                         </select>
-                        <div id="fetchLoading" class="absolute right-4 top-1/2 -translate-y-1/2 hidden">
-                            <i class="fas fa-spinner fa-spin text-indigo-400"></i>
-                        </div>
+                        <div id="m_loading" class="absolute right-4 top-1/2 -translate-y-1/2 hidden"><i class="fas fa-spinner fa-spin text-indigo-400"></i></div>
                     </div>
                 </div>
-
-                <!-- Model ID (Technical) -->
+                <!-- Model ID -->
                 <div class="space-y-2">
-                    <label class="text-xs font-bold text-slate-400 uppercase tracking-widest">Model ID (Technical)</label>
-                    <input type="text" id="model_id" name="model_id" required placeholder="e.g. gpt-4o" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-indigo-500 outline-none transition">
+                    <label class="text-xs font-bold text-slate-400 uppercase">Model ID (Technical)</label>
+                    <input type="text" id="m_id" required placeholder="e.g. gpt-4o" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-indigo-500 outline-none transition">
                 </div>
-
                 <!-- Display Name -->
                 <div class="space-y-2">
-                    <label class="text-xs font-bold text-slate-400 uppercase tracking-widest">Display Name</label>
-                    <input type="text" id="name" name="name" required placeholder="e.g. GPT-4 Omni" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-indigo-500 outline-none transition">
+                    <label class="text-xs font-bold text-slate-400 uppercase">Display Name</label>
+                    <input type="text" id="m_name" required placeholder="e.g. GPT-4 Omni" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-indigo-500 outline-none transition">
                 </div>
             </div>
 
-            <!-- Endpoint -->
+            <!-- Capabilities Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="bg-slate-800/50 p-4 rounded-2xl border border-slate-700 space-y-2">
+                    <div class="flex justify-between items-center"><span class="text-sm font-bold text-white"><i class="fas fa-font mr-2"></i>Text</span><input type="checkbox" id="m_text" checked class="w-4 h-4 rounded text-indigo-600"></div>
+                    <input type="text" id="m_text_d" placeholder="Details..." class="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-1.5 text-xs text-slate-400">
+                </div>
+                <div class="bg-slate-800/50 p-4 rounded-2xl border border-slate-700 space-y-2">
+                    <div class="flex justify-between items-center"><span class="text-sm font-bold text-white"><i class="fas fa-eye mr-2"></i>Vision</span><input type="checkbox" id="m_vision" class="w-4 h-4 rounded text-indigo-600"></div>
+                    <input type="text" id="m_vision_d" placeholder="Details..." class="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-1.5 text-xs text-slate-400">
+                </div>
+                <div class="bg-slate-800/50 p-4 rounded-2xl border border-slate-700 space-y-2">
+                    <div class="flex justify-between items-center"><span class="text-sm font-bold text-white"><i class="fas fa-tools mr-2"></i>Tools</span><input type="checkbox" id="m_tools" class="w-4 h-4 rounded text-indigo-600"></div>
+                    <input type="text" id="m_tools_d" placeholder="Details..." class="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-1.5 text-xs text-slate-400">
+                </div>
+                <div class="bg-slate-800/50 p-4 rounded-2xl border border-slate-700 space-y-2">
+                    <div class="flex justify-between items-center"><span class="text-sm font-bold text-white"><i class="fas fa-brain mr-2"></i>Thinking</span><input type="checkbox" id="m_thinking" class="w-4 h-4 rounded text-indigo-600"></div>
+                    <input type="text" id="m_thinking_d" placeholder="Details..." class="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-1.5 text-xs text-slate-400">
+                </div>
+            </div>
+
+            <!-- Settings -->
+            <div class="grid grid-cols-2 gap-4 border-t border-slate-800 pt-4">
+                <div class="flex items-center gap-3"><input type="checkbox" id="m_default" class="w-5 h-5 rounded text-indigo-600"><label class="text-sm text-slate-300">Set as Provider Default</label></div>
+                <div class="flex items-center gap-3"><input type="checkbox" id="m_active" checked class="w-5 h-5 rounded text-indigo-600"><label class="text-sm text-slate-300">Active</label></div>
+            </div>
             <div class="space-y-2">
-                <label class="text-xs font-bold text-slate-400 uppercase tracking-widest">Custom API Endpoint (Optional)</label>
-                <input type="text" id="api_endpoint" name="api_endpoint" placeholder="Leave empty for default" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-indigo-500 outline-none transition">
+                <label class="text-xs font-bold text-slate-400 uppercase">Fallback Priority (Lower = Higher)</label>
+                <input type="number" id="m_priority" value="99" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white outline-none">
             </div>
-
-            <!-- Capability Matrix -->
-            <div class="space-y-4">
-                <label class="text-xs font-bold text-slate-400 uppercase tracking-widest">Capability Matrix</label>
-                <div class="grid grid-cols-1 gap-4">
-                    <!-- Text Capability -->
-                    <div class="bg-slate-800/50 border border-slate-700 p-4 rounded-2xl flex flex-col gap-3">
-                        <div class="flex items-center justify-between">
-                            <div class="flex items-center gap-3">
-                                <div class="p-2 bg-indigo-500/10 rounded-lg text-indigo-400">
-                                    <i class="fas fa-font"></i>
-                                </div>
-                                <div>
-                                    <p class="text-sm font-bold text-white">Text Generation</p>
-                                    <p class="text-xs text-slate-500">Natural language processing & chat</p>
-                                </div>
-                            </div>
-                            <input type="checkbox" id="supports_text" checked class="w-5 h-5 rounded-md border-slate-700 bg-slate-800 text-indigo-600 focus:ring-indigo-500">
-                        </div>
-                        <input type="text" id="text_details" placeholder="Context window, tokens, etc." class="bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-300 outline-none focus:border-indigo-500/50 transition">
-                    </div>
-
-                    <!-- Vision Capability -->
-                    <div class="bg-slate-800/50 border border-slate-700 p-4 rounded-2xl flex flex-col gap-3">
-                        <div class="flex items-center justify-between">
-                            <div class="flex items-center gap-3">
-                                <div class="p-2 bg-emerald-500/10 rounded-lg text-emerald-400">
-                                    <i class="fas fa-eye"></i>
-                                </div>
-                                <div>
-                                    <p class="text-sm font-bold text-white">Vision Support</p>
-                                    <p class="text-xs text-slate-500">OCR, image analysis & understanding</p>
-                                </div>
-                            </div>
-                            <input type="checkbox" id="supports_vision" class="w-5 h-5 rounded-md border-slate-700 bg-slate-800 text-indigo-600 focus:ring-indigo-500">
-                        </div>
-                        <input type="text" id="vision_details" placeholder="Max images, resolutions, etc." class="bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-300 outline-none focus:border-indigo-500/50 transition">
-                    </div>
-
-                    <!-- Tools Capability -->
-                    <div class="bg-slate-800/50 border border-slate-700 p-4 rounded-2xl flex flex-col gap-3">
-                        <div class="flex items-center justify-between">
-                            <div class="flex items-center gap-3">
-                                <div class="p-2 bg-amber-500/10 rounded-lg text-amber-400">
-                                    <i class="fas fa-tools"></i>
-                                </div>
-                                <div>
-                                    <p class="text-sm font-bold text-white">Tool Calling</p>
-                                    <p class="text-xs text-slate-500">Function calling & plugin execution</p>
-                                </div>
-                            </div>
-                            <input type="checkbox" id="supports_tools" class="w-5 h-5 rounded-md border-slate-700 bg-slate-800 text-indigo-600 focus:ring-indigo-500">
-                        </div>
-                        <input type="text" id="tools_details" placeholder="Schema support, parallel calling, etc." class="bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-300 outline-none focus:border-indigo-500/50 transition">
-                    </div>
-
-                    <!-- Thinking Capability -->
-                    <div class="bg-slate-800/50 border border-slate-700 p-4 rounded-2xl flex flex-col gap-3">
-                        <div class="flex items-center justify-between">
-                            <div class="flex items-center gap-3">
-                                <div class="p-2 bg-purple-500/10 rounded-lg text-purple-400">
-                                    <i class="fas fa-brain"></i>
-                                </div>
-                                <div>
-                                    <p class="text-sm font-bold text-white">Chain-of-Thought</p>
-                                    <p class="text-xs text-slate-500">Deep reasoning & logical inference</p>
-                                </div>
-                            </div>
-                            <input type="checkbox" id="supports_thinking" class="w-5 h-5 rounded-md border-slate-700 bg-slate-800 text-indigo-600 focus:ring-indigo-500">
-                        </div>
-                        <input type="text" id="thinking_details" placeholder="Reasoning level, logic accuracy, etc." class="bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-300 outline-none focus:border-indigo-500/50 transition">
-                    </div>
-                </div>
-            </div>
-
-            <!-- Settings Row -->
-            <div class="grid grid-cols-2 gap-6 pt-4 border-t border-slate-800">
-                <div class="flex items-center gap-3">
-                    <input type="checkbox" id="is_default" class="w-5 h-5 rounded-md border-slate-700 bg-slate-800 text-indigo-600 focus:ring-indigo-500">
-                    <label for="is_default" class="text-sm font-medium text-slate-300">Set as Provider Default</label>
-                </div>
-                <div class="flex items-center gap-3">
-                    <input type="checkbox" id="is_active_check" checked class="w-5 h-5 rounded-md border-slate-700 bg-slate-800 text-indigo-600 focus:ring-indigo-500">
-                    <label for="is_active_check" class="text-sm font-medium text-slate-300">Active for Requests</label>
-                </div>
-            </div>
-
-            <!-- Priority -->
-            <div class="space-y-2">
-                <label class="text-xs font-bold text-slate-400 uppercase tracking-widest">Fallback Priority (Lower = Higher Priority)</label>
-                <input type="number" id="fallback_priority" name="fallback_priority" value="99" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-indigo-500 outline-none transition">
+            <div class="pt-4 flex gap-4">
+                <button type="button" onclick="closeModelModal()" class="flex-1 px-6 py-3 rounded-xl bg-slate-800 text-slate-300 font-bold hover:bg-slate-700 transition">Cancel</button>
+                <button type="submit" class="flex-[2] px-6 py-3 rounded-xl bg-indigo-600 text-white font-bold hover:bg-indigo-700 transition">Save Model</button>
             </div>
         </form>
-
-        <div class="px-8 py-6 border-t border-slate-800 bg-slate-900/50 flex gap-4">
-            <button onclick="closeAddModelModal()" class="flex-1 px-6 py-3 rounded-xl bg-slate-800 text-slate-300 font-bold hover:bg-slate-700 transition">Cancel</button>
-            <button onclick="submitModelForm()" class="flex-[2] px-6 py-3 rounded-xl bg-indigo-600 text-white font-bold hover:bg-indigo-700 transition shadow-lg shadow-indigo-500/20 active:scale-95">Save AI Model</button>
-        </div>
     </div>
 </div>
 
 <script>
-    function openAddModelModal() {
-        document.getElementById('modalTitle').innerText = 'Add New AI Model';
+    const PREDEFINED_MODELS = {
+        openai: [
+            { id: 'gpt-4o', name: 'GPT-4 Omni', vision: true },
+            { id: 'gpt-4o-mini', name: 'GPT-4o Mini', vision: true },
+            { id: 'o1-preview', name: 'OpenAI o1 Preview', thinking: true }
+        ],
+        gemini: [
+            { id: 'gemini-1.5-pro', name: 'Gemini 1.5 Pro', vision: true },
+            { id: 'gemini-1.5-flash', name: 'Gemini 1.5 Flash', vision: true },
+            { id: 'gemini-2.0-flash-exp', name: 'Gemini 2.0 Flash Exp', vision: true }
+        ],
+        groq: [
+            { id: 'llama-3.1-70b-versatile', name: 'Llama 3.1 70B' },
+            { id: 'llama-3.3-70b-specdec', name: 'Llama 3.3 70B' },
+            { id: 'mixtral-8x7b-32768', name: 'Mixtral 8x7B' }
+        ]
+    };
+
+    function switchTab(tab) {
+        document.getElementById('section-models').classList.toggle('hidden', tab !== 'models');
+        document.getElementById('section-providers').classList.toggle('hidden', tab !== 'providers');
+        
+        document.getElementById('tab-models').classList.toggle('border-indigo-500', tab === 'models');
+        document.getElementById('tab-models').classList.toggle('text-indigo-400', tab === 'models');
+        document.getElementById('tab-models').classList.toggle('border-transparent', tab !== 'models');
+        document.getElementById('tab-models').classList.toggle('text-slate-400', tab !== 'models');
+        
+        document.getElementById('tab-providers').classList.toggle('border-indigo-500', tab === 'providers');
+        document.getElementById('tab-providers').classList.toggle('text-indigo-400', tab === 'providers');
+        document.getElementById('tab-providers').classList.toggle('border-transparent', tab !== 'providers');
+        document.getElementById('tab-providers').classList.toggle('text-slate-400', tab !== 'providers');
+    }
+
+    // --- Provider Functions ---
+    const URL_PRESETS = {
+        openai: 'https://api.openai.com/v1',
+        gemini: 'https://generativelanguage.googleapis.com/v1beta/models',
+        groq: 'https://api.groq.com/openai/v1',
+        openrouter: 'https://openrouter.ai/api/v1',
+        ollama: 'http://localhost:11434/v1',
+        lm_studio: 'http://localhost:1234/v1'
+    };
+
+    function updateUrlPreset() {
+        const type = document.getElementById('p_type').value;
+        const urlInput = document.getElementById('p_url');
+        if (!urlInput.value || Object.values(URL_PRESETS).includes(urlInput.value)) {
+            urlInput.value = URL_PRESETS[type] || '';
+        }
+    }
+
+    function openProviderModal() {
+        document.getElementById('providerModalTitle').innerText = 'Add AI Provider';
+        document.getElementById('providerForm').reset();
+        document.getElementById('providerModal').classList.remove('hidden');
+        updateUrlPreset();
+    }
+    function openEditProviderModal(p) {
+        document.getElementById('providerModalTitle').innerText = 'Edit AI Provider';
+        document.getElementById('p_name').value = p.name;
+        document.getElementById('p_type').value = p.provider_type;
+        document.getElementById('p_key').value = p.api_key || '';
+        document.getElementById('p_url').value = p.base_url || '';
+        document.getElementById('p_active').checked = p.is_active;
+        document.getElementById('providerModal').classList.remove('hidden');
+    }
+    function closeProviderModal() { document.getElementById('providerModal').classList.add('hidden'); }
+    
+    async function saveProvider(e) {
+        e.preventDefault();
+        const data = {
+            name: document.getElementById('p_name').value,
+            provider_type: document.getElementById('p_type').value,
+            api_key: document.getElementById('p_key').value || null,
+            base_url: document.getElementById('p_url').value || null,
+            is_active: document.getElementById('p_active').checked
+        };
+        const res = await fetch('/api/admin/providers/save', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+        if ((await res.json()).status === 'success') window.location.reload();
+    }
+
+    async function deleteProvider(id) {
+        if (confirm('Delete this provider and all its models?')) {
+            await fetch(`/api/admin/providers/delete/${id}`, { method: 'POST' });
+            window.location.reload();
+        }
+    }
+
+    // --- Model Functions ---
+    function openModelModal() {
+        document.getElementById('modelModalTitle').innerText = 'Add AI Model';
         document.getElementById('modelForm').reset();
-        document.getElementById('edit_model_id').value = '';
-        document.getElementById('modelModal').classList.remove('hidden');
-        handleProviderChange(); // Initial fetch
-    }
-
-    function openEditModal(model) {
-        document.getElementById('modalTitle').innerText = 'Edit AI Model';
-        document.getElementById('edit_model_id').value = model.id;
-        
-        document.getElementById('name').value = model.name;
-        document.getElementById('provider').value = model.provider;
-        document.getElementById('model_id').value = model.model_id;
-        document.getElementById('api_endpoint').value = model.api_endpoint || '';
-        
-        document.getElementById('supports_text').checked = model.supports_text;
-        document.getElementById('text_details').value = model.text_details || '';
-        
-        document.getElementById('supports_vision').checked = model.supports_vision;
-        document.getElementById('vision_details').value = model.vision_details || '';
-        
-        document.getElementById('supports_tools').checked = model.supports_tools;
-        document.getElementById('tools_details').value = model.tools_details || '';
-        
-        document.getElementById('supports_thinking').checked = model.supports_thinking;
-        document.getElementById('thinking_details').value = model.thinking_details || '';
-        
-        document.getElementById('is_default').checked = model.is_default;
-        document.getElementById('is_active_check').checked = model.is_active;
-        document.getElementById('fallback_priority').value = model.fallback_priority;
-        
+        document.getElementById('m_edit_id').value = '';
         document.getElementById('modelModal').classList.remove('hidden');
     }
+    function openEditModelModal(m) {
+        document.getElementById('modelModalTitle').innerText = 'Edit AI Model';
+        document.getElementById('m_edit_id').value = m.id;
+        document.getElementById('m_name').value = m.name;
+        document.getElementById('m_id').value = m.model_id;
+        document.getElementById('m_provider').value = m.provider_id || '';
+        document.getElementById('m_text').checked = m.supports_text;
+        document.getElementById('m_text_d').value = m.text_details || '';
+        document.getElementById('m_vision').checked = m.supports_vision;
+        document.getElementById('m_vision_d').value = m.vision_details || '';
+        document.getElementById('m_tools').checked = m.supports_tools;
+        document.getElementById('m_tools_d').value = m.tools_details || '';
+        document.getElementById('m_thinking').checked = m.supports_thinking;
+        document.getElementById('m_thinking_d').value = m.thinking_details || '';
+        document.getElementById('m_default').checked = m.is_default;
+        document.getElementById('m_active').checked = m.is_active;
+        document.getElementById('m_priority').value = m.fallback_priority;
+        document.getElementById('modelModal').classList.remove('hidden');
+    }
+    function closeModelModal() { document.getElementById('modelModal').classList.add('hidden'); }
 
-    function closeAddModelModal() {
-        document.getElementById('modelModal').classList.add('hidden');
+    async function handleProviderSelect() {
+        const select = document.getElementById('m_provider');
+        const discovery = document.getElementById('m_discovery');
+        const providerId = select.value;
+        const type = select.options[select.selectedIndex].dataset.type;
+        
+        discovery.innerHTML = '<option value="">-- Choose Method --</option>';
+        if (!providerId) return;
+
+        // Add Auto-Fetch Option
+        const optFetch = document.createElement('option');
+        optFetch.value = 'fetch';
+        optFetch.text = '✨ Auto-Discovery (Live API Scan)';
+        discovery.appendChild(optFetch);
+
+        // Add Predefined Models if available
+        if (PREDEFINED_MODELS[type]) {
+            const group = document.createElement('optgroup');
+            group.label = 'Predefined Models';
+            PREDEFINED_MODELS[type].forEach(m => {
+                const opt = document.createElement('option');
+                opt.value = `pre:${m.id}`;
+                opt.text = m.name;
+                opt.dataset.raw = JSON.stringify(m);
+                group.appendChild(opt);
+            });
+            discovery.appendChild(group);
+        }
     }
 
-    async function handleProviderChange() {
-        const provider = document.getElementById('provider').value;
-        const select = document.getElementById('discovered_models');
-        const loader = document.getElementById('fetchLoading');
+    async function applyDiscovery() {
+        const select = document.getElementById('m_discovery');
+        const val = select.value;
+        const providerId = document.getElementById('m_provider').value;
         
-        select.innerHTML = '<option value="">Fetching models...</option>';
-        loader.classList.remove('hidden');
-        
-        try {
-            const response = await fetch(`/api/admin/models/fetch/${provider}`);
-            const models = await response.json();
-            
-            select.innerHTML = '<option value="">-- Discovered Models --</option>';
-            if (models.length > 0 && !models[0].error) {
+        if (val === 'fetch') {
+            document.getElementById('m_loading').classList.remove('hidden');
+            try {
+                const res = await fetch(`/api/admin/models/fetch/${providerId}`);
+                const models = await res.json();
+                select.innerHTML = '<option value="">-- Discovered Live --</option>';
                 models.forEach(m => {
+                    if (m.error) return;
                     const opt = document.createElement('option');
-                    opt.value = m.model_id;
+                    opt.value = `pre:${m.model_id}`;
                     opt.text = m.display_name;
-                    opt.dataset.vision = m.is_vision;
+                    opt.dataset.raw = JSON.stringify({ id: m.model_id, name: m.display_name, vision: m.is_vision });
                     select.appendChild(opt);
                 });
-            } else {
-                select.innerHTML = `<option value="">${models[0]?.error || 'No models found'}</option>`;
+            } finally {
+                document.getElementById('m_loading').classList.add('hidden');
             }
-        } catch (e) {
-            select.innerHTML = '<option value="">Error fetching models</option>';
-        } finally {
-            loader.classList.add('hidden');
+        } else if (val.startsWith('pre:')) {
+            const raw = JSON.parse(select.options[select.selectedIndex].dataset.raw);
+            document.getElementById('m_id').value = raw.id;
+            document.getElementById('m_name').value = raw.name;
+            document.getElementById('m_vision').checked = !!raw.vision;
+            document.getElementById('m_thinking').checked = !!raw.thinking;
         }
     }
 
-    function applyDiscoveredModel() {
-        const select = document.getElementById('discovered_models');
-        const selected = select.options[select.selectedIndex];
-        if (!selected.value) return;
-
-        document.getElementById('model_id').value = selected.value;
-        document.getElementById('name').value = selected.text;
-        document.getElementById('supports_vision').checked = selected.dataset.vision === 'true';
-    }
-
-    async function submitModelForm() {
-        const formData = {
-            name: document.getElementById('name').value,
-            provider: document.getElementById('provider').value,
-            model_id: document.getElementById('model_id').value,
-            api_endpoint: document.getElementById('api_endpoint').value || null,
-            is_active: document.getElementById('is_active_check').checked,
-            is_default: document.getElementById('is_default').checked,
-            supports_vision: document.getElementById('supports_vision').checked,
-            vision_details: document.getElementById('vision_details').value || null,
-            supports_text: document.getElementById('supports_text').checked,
-            text_details: document.getElementById('text_details').value || null,
-            supports_tools: document.getElementById('supports_tools').checked,
-            tools_details: document.getElementById('tools_details').value || null,
-            supports_thinking: document.getElementById('supports_thinking').checked,
-            thinking_details: document.getElementById('thinking_details').value || null,
-            fallback_priority: parseInt(document.getElementById('fallback_priority').value) || 99
+    async function saveModel(e) {
+        e.preventDefault();
+        const data = {
+            name: document.getElementById('m_name').value,
+            provider_id: document.getElementById('m_provider').value,
+            model_id: document.getElementById('m_id').value,
+            supports_text: document.getElementById('m_text').checked,
+            text_details: document.getElementById('m_text_d').value || null,
+            supports_vision: document.getElementById('m_vision').checked,
+            vision_details: document.getElementById('m_vision_d').value || null,
+            supports_tools: document.getElementById('m_tools').checked,
+            tools_details: document.getElementById('m_tools_d').value || null,
+            supports_thinking: document.getElementById('m_thinking').checked,
+            thinking_details: document.getElementById('m_thinking_d').value || null,
+            is_default: document.getElementById('m_default').checked,
+            is_active: document.getElementById('m_active').checked,
+            fallback_priority: parseInt(document.getElementById('m_priority').value)
         };
-
-        if (!formData.name || !formData.model_id) {
-            alert('Please fill in required fields.');
-            return;
-        }
-
-        try {
-            const response = await fetch('/api/admin/models/save', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(formData)
-            });
-            const result = await response.json();
-            if (result.status === 'success') {
-                window.location.reload();
-            } else {
-                alert('Error saving model: ' + result.message);
-            }
-        } catch (e) {
-            alert('Failed to save model.');
-        }
+        const res = await fetch('/api/admin/models/save', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+        if ((await res.json()).status === 'success') window.location.reload();
     }
 
     async function deleteModel(id) {
-        if (!confirm('Are you sure you want to delete this model?')) return;
-        
-        try {
-            const response = await fetch(`/api/admin/models/delete/${id}`, { method: 'POST' });
-            const result = await response.json();
-            if (result.status === 'success') {
-                window.location.reload();
-            }
-        } catch (e) {
-            alert('Failed to delete model.');
-        }
-    }
-
-    async function setAsDefault(id) {
-        try {
-            const response = await fetch(`/api/admin/models/set-default/${id}`, { method: 'POST' });
-            const result = await response.json();
-            if (result.status === 'success') {
-                window.location.reload();
-            }
-        } catch (e) {
-            alert('Failed to set default.');
+        if (confirm('Delete this model?')) {
+            await fetch(`/api/admin/models/delete/${id}`, { method: 'POST' });
+            window.location.reload();
         }
     }
 </script>
 
 <style>
-    .custom-scrollbar::-webkit-scrollbar {
-        width: 4px;
-    }
-    .custom-scrollbar::-webkit-scrollbar-track {
-        background: transparent;
-    }
-    .custom-scrollbar::-webkit-scrollbar-thumb {
-        background: #334155;
-        border-radius: 10px;
-    }
-    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-        background: #475569;
-    }
+    .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+    .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+    .custom-scrollbar::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #475569; }
 </style>
 {% endblock %}
