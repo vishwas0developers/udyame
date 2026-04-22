@@ -169,12 +169,12 @@ async def google_callback(code: str, response: Response, db: Session = Depends(g
     db.add(db_refresh)
     db.commit()
     
-    set_auth_cookies(response, access_token, refresh_token_str)
-    
     # Redirect back to frontend with the access token in the URL for the store to pick up
     from fastapi.responses import RedirectResponse
     redirect_url = f"{settings.FRONTEND_URL}/dashboard?token={access_token}"
-    return RedirectResponse(url=redirect_url)
+    response = RedirectResponse(url=redirect_url)
+    set_auth_cookies(response, access_token, refresh_token_str)
+    return response
 
 @router.get("/me", response_model=UserOut)
 def get_me(user_id: str = Depends(security.get_current_user_id), db: Session = Depends(get_db)):
@@ -253,8 +253,8 @@ def magic_login(token: str, response: Response, db: Session = Depends(get_db)):
     db.add(db_refresh)
     db.commit()
     
-    set_auth_cookies(response, access_token, refresh_token_str)
-    
     from fastapi.responses import RedirectResponse
     redirect_url = f"{settings.FRONTEND_URL}/dashboard?token={access_token}"
-    return RedirectResponse(url=redirect_url)
+    response = RedirectResponse(url=redirect_url)
+    set_auth_cookies(response, access_token, refresh_token_str)
+    return response
