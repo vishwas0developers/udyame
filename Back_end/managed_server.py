@@ -4,7 +4,9 @@ import subprocess
 import os
 import socket
 import re
+import threading
 from watchdog.observers import Observer
+
 from watchdog.events import FileSystemEventHandler
 
 class RestartHandler(FileSystemEventHandler):
@@ -66,7 +68,27 @@ class RestartHandler(FileSystemEventHandler):
         normalized_venv = os.path.normcase(os.path.abspath(self.venv_dir))
         return normalized_path.startswith(normalized_venv + os.sep)
 
+    def _stream_logs(self, pipe, log_file):
+        try:
+            for line in iter(pipe.readline, ''):
+                if line:
+                    sys.stdout.write(line)
+                    sys.stdout.flush()
+                    log_file.write(line)
+                    log_file.flush()
+        except Exception as e:
+            print(f"[ERROR] Log streaming failed: {e}")
+        finally:
+            pipe.close()
+            log_file.close()
+
     def start_process(self):
+        # Create logs directory if it doesn't exist
+        log_dir = os.path.join(self.root_dir, "logs")
+        if not os.path.exists(log_dir):
+            os.makedirs(log_dir)
+        log_file_path = os.path.join(log_dir, "backend.log")
+
         if self.process:
             print("\n[WATCHDOG] Change detected! Restarting Udyame AI Backend...")
             self.process.terminate()
@@ -78,7 +100,6 @@ class RestartHandler(FileSystemEventHandler):
             print("\n[WATCHDOG] Initializing Udyame AI Backend...")
         
         # Start uvicorn as a subprocess
-        # We use sys.executable to ensure we use the same python interpreter (venv)
         cmd = [
             sys.executable, "-m", "uvicorn", 
             self.app_module, 
@@ -88,16 +109,36 @@ class RestartHandler(FileSystemEventHandler):
         
         try:
             print(f"[WATCHDOG] Executing: {' '.join(cmd)}")
-            self.process = subprocess.Popen(cmd, cwd=self.root_dir)
+            # Open log file in append mode
+            log_file = open(log_file_path, "a", encoding="utf-8")
+            log_file.write(f"\n--- Process Started at {time.strftime('%Y-%m-%d %H:%M:%S')} ---\n")
+            log_file.flush()
             
-            # Check for immediate crash in a loop for 3 seconds
-            for i in range(30): # 30 * 0.1s = 3s
-                time.sleep(0.1)
-                if self.process.poll() is not None:
-                    print(f"[ERROR] Backend failed to start with exit code {self.process.returncode}")
-                    return
+            self.process = subprocess.Popen(
+                cmd, 
+                cwd=self.root_dir, 
+                stdout=subprocess.PIPE, 
+                stderr=subprocess.STDOUT,
+                bufsize=1, # Line buffered
+                universal_newlines=True,
+                text=True
+            )
             
-            print("[SUCCESS] Backend process launched.")
+            # Start a thread to stream logs to both stdout and the file
+            log_thread = threading.Thread(
+                target=self._stream_logs, 
+                args=(self.process.stdout, log_file),
+                daemon=True
+            )
+            log_thread.start()
+            
+            # Check for immediate crash (briefly)
+            time.sleep(1)
+            if self.process.poll() is not None:
+                print(f"[ERROR] Backend failed to start with exit code {self.process.returncode}. See logs/backend.log")
+                return
+            
+            print(f"[SUCCESS] Backend process launched. Monitoring logs...")
         except Exception as e:
             print(f"[ERROR] Could not start backend: {e}")
 

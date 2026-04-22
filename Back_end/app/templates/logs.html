@@ -1,0 +1,185 @@
+{% extends "layout.html" %}
+
+{% block title %}System Logs - Udyame AI{% endblock %}
+
+{% block header %}System Logs{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Log Source Selection -->
+    <div class="flex items-center justify-between">
+        <div class="flex p-1 bg-slate-800 rounded-xl border border-slate-700">
+            <button onclick="switchSource('backend')" id="tab-backend"
+                class="px-6 py-2 rounded-lg text-sm font-semibold transition-all source-tab active-tab bg-indigo-600 text-white shadow-lg">
+                <i class="fas fa-server mr-2"></i> Backend Server
+            </button>
+            <button onclick="switchSource('frontend')" id="tab-frontend"
+                class="px-6 py-2 rounded-lg text-sm font-semibold transition-all source-tab text-slate-400 hover:text-white">
+                <i class="fas fa-desktop mr-2"></i> Frontend Server
+            </button>
+        </div>
+
+        <div class="flex items-center space-x-4">
+            <div class="flex items-center text-xs text-slate-400">
+                <span class="h-2 w-2 rounded-full bg-green-500 mr-2 animate-pulse"></span>
+                Live Monitoring
+            </div>
+            <button onclick="refreshLogs()" class="p-2 bg-slate-800 rounded-lg hover:bg-slate-700 transition" title="Refresh Now">
+                <i class="fas fa-sync-alt"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- Terminal Container -->
+    <div class="relative group">
+        <!-- Decoration -->
+        <div class="absolute -inset-1 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-2xl blur opacity-20 group-hover:opacity-30 transition duration-1000"></div>
+        
+        <div class="relative bg-slate-950 rounded-2xl border border-slate-800 shadow-2xl overflow-hidden">
+            <!-- Terminal Header -->
+            <div class="flex items-center justify-between px-6 py-3 bg-slate-900 border-b border-slate-800">
+                <div class="flex space-x-2">
+                    <div class="h-3 w-3 rounded-full bg-red-500/50"></div>
+                    <div class="h-3 w-3 rounded-full bg-amber-500/50"></div>
+                    <div class="h-3 w-3 rounded-full bg-green-500/50"></div>
+                </div>
+                <div class="text-xs font-mono text-slate-500" id="log-status">
+                    Showing last 500 lines
+                </div>
+                <div class="flex items-center space-x-4">
+                    <button onclick="copyLogs()" class="text-xs text-slate-400 hover:text-white transition">
+                        <i class="far fa-copy mr-1"></i> Copy
+                    </button>
+                    <button onclick="scrollToBottom()" class="text-xs text-slate-400 hover:text-white transition">
+                        <i class="fas fa-arrow-down mr-1"></i> Scroll to Bottom
+                    </button>
+                </div>
+            </div>
+
+            <!-- Log Content -->
+            <div id="log-container" class="h-[600px] overflow-y-auto p-6 font-mono text-sm leading-relaxed scrollbar-thin scrollbar-thumb-slate-700">
+                <div id="log-content" class="whitespace-pre-wrap text-slate-300">
+                    <div class="flex items-center justify-center h-full text-slate-500 italic">
+                        <i class="fas fa-circle-notch fa-spin mr-3 text-indigo-500"></i>
+                        Initializing log stream...
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .scrollbar-thin::-webkit-scrollbar { width: 6px; }
+    .scrollbar-thin::-webkit-scrollbar-track { background: transparent; }
+    .scrollbar-thin::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
+    .scrollbar-thin::-webkit-scrollbar-thumb:hover { background: #475569; }
+    
+    .active-tab {
+        background-color: #4f46e5;
+        color: white;
+        box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+    }
+</style>
+
+<script>
+    let currentSource = 'backend';
+    let socket;
+
+    function connectWebSocket(source) {
+        if (socket) {
+            socket.close();
+        }
+
+        const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+        const wsUrl = `${protocol}//${window.location.host}/ws/admin/logs/${source}`;
+        
+        socket = new WebSocket(wsUrl);
+        
+        const container = document.getElementById('log-content');
+        container.innerHTML = `
+            <div class="flex items-center justify-center h-full text-slate-500 italic">
+                <i class="fas fa-circle-notch fa-spin mr-3 text-indigo-500"></i>
+                Connecting to ${source} log stream...
+            </div>`;
+        
+        socket.onopen = () => {
+            container.innerHTML = ''; // Clear loading message
+        };
+
+        socket.onmessage = (event) => {
+            let line = event.data;
+            if (!line) return;
+
+            // Highlight some keywords
+            line = line.replace(/ERROR/g, '<span class="text-red-400 font-bold">ERROR</span>');
+            line = line.replace(/WARN/g, '<span class="text-amber-400 font-bold">WARN</span>');
+            line = line.replace(/INFO/g, '<span class="text-indigo-400">INFO</span>');
+            line = line.replace(/SUCCESS/g, '<span class="text-green-400">SUCCESS</span>');
+            line = line.replace(/WATCHDOG/g, '<span class="text-purple-400 font-bold">WATCHDOG</span>');
+            
+            const lineDiv = document.createElement('div');
+            lineDiv.innerHTML = line;
+            container.appendChild(lineDiv);
+            
+            document.getElementById('log-status').innerText = `Live | ${new Date().toLocaleTimeString()}`;
+            
+            // Should we scroll to bottom?
+            const logBox = document.getElementById('log-container');
+            const isNearBottom = logBox.scrollHeight - logBox.scrollTop - logBox.clientHeight < 150;
+            if (isNearBottom) {
+                scrollToBottom();
+            }
+        };
+
+        socket.onclose = () => {
+            document.getElementById('log-status').innerText = 'Disconnected. Click refresh to reconnect.';
+        };
+        
+        socket.onerror = (error) => {
+            console.error('WebSocket error:', error);
+            document.getElementById('log-status').innerText = 'Connection Error.';
+        };
+    }
+
+    function switchSource(source) {
+        currentSource = source;
+        
+        // Update UI
+        document.querySelectorAll('.source-tab').forEach(tab => {
+            tab.classList.remove('active-tab', 'bg-indigo-600', 'text-white', 'shadow-lg');
+            tab.classList.add('text-slate-400', 'hover:text-white');
+        });
+        
+        const activeTab = document.getElementById(`tab-${source}`);
+        activeTab.classList.remove('text-slate-400', 'hover:text-white');
+        activeTab.classList.add('active-tab', 'bg-indigo-600', 'text-white', 'shadow-lg');
+        
+        connectWebSocket(source);
+    }
+
+    function refreshLogs() {
+        switchSource(currentSource);
+    }
+
+    function scrollToBottom() {
+        const container = document.getElementById('log-container');
+        container.scrollTop = container.scrollHeight;
+    }
+
+    function copyLogs() {
+        const text = document.getElementById('log-content').innerText;
+        navigator.clipboard.writeText(text);
+        alert('Logs copied to clipboard');
+    }
+
+    // Initial Load
+    window.onload = () => {
+        connectWebSocket(currentSource);
+    };
+
+    window.onunload = () => {
+        if (socket) socket.close();
+    };
+</script>
+{% endblock %}

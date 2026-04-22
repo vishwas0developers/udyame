@@ -226,7 +226,7 @@ echo [LAUNCH] Starting Backend in new window...
 start "udyame Backend" /D "%BACKEND_DIR%" cmd /k "echo Starting Backend Server... && venv\Scripts\python.exe managed_server.py || pause"
 
 echo [LAUNCH] Starting Frontend in new window...
-start "udyame Frontend" /D "%FRONTEND_DIR%" cmd /k "echo Starting Frontend Dev Server... && npm run dev || pause"
+start "udyame Frontend" /D "%FRONTEND_DIR%" powershell -NoExit -Command "$env:WATCHPACK_POLLING='true'; if (-not (Test-Path logs)) { New-Item -ItemType Directory logs }; Write-Host 'Starting Frontend Dev Server...'; npm run dev | Tee-Object -FilePath 'logs/frontend.log'"
 
 echo.
 echo ==========================================================
@@ -236,4 +236,5 @@ echo Frontend should be on http://localhost:3000
 echo [INFO] Review any error shown above before closing this launcher window.
 echo ==========================================================
 echo.
-pause
+timeout /t 3 >nul
+exit /b 0

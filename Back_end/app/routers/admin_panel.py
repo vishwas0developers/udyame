@@ -1,11 +1,14 @@
-from fastapi import APIRouter, Request, Depends, Form, HTTPException, status
+import os
+import asyncio
+from datetime import datetime
+from typing import List, Optional
+from uuid import UUID
+from pydantic import BaseModel
+from sqlalchemy.orm import Session
+from fastapi import APIRouter, Request, Depends, Form, HTTPException, status, WebSocket, WebSocketDisconnect
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
-from sqlalchemy.orm import Session
-from typing import List, Optional
-from pydantic import BaseModel
-from uuid import UUID
-import os
+
 
 from app.db.session import get_db
 from app.routers.deps import get_current_user
@@ -177,6 +180,101 @@ async def admin_logout(request: Request, next: Optional[str] = None):
     response = RedirectResponse(url=target, status_code=303)
     response.delete_cookie("admin_session")
     return response
+
+# --- Log Management ---
+
+def get_last_n_lines(file_path, n=500):
+    if not os.path.exists(file_path):
+        return f"Log file not found at {file_path}"
+    try:
+        with open(file_path, "r", encoding="utf-8", errors="replace") as f:
+            lines = f.readlines()
+            return "".join(lines[-n:])
+    except Exception as e:
+        return f"Error reading logs: {str(e)}"
+
+@router.get("/logs", response_class=HTMLResponse)
+async def admin_logs_page(request: Request):
+    requires_login = not check_admin_auth(request)
+    return templates.TemplateResponse("logs.html", {
+        "request": request,
+        "active_page": "logs",
+        "requires_login": requires_login
+    })
+
+@router.get("/api/admin/logs/{source}")
+async def admin_logs_api(source: str, request: Request):
+    if not check_admin_auth(request):
+        raise HTTPException(status_code=401)
+    
+    # Get the project root directory (udyame/)
+    # Current file: Back_end/app/routers/admin_panel.py
+    # 1. routers/, 2. app/, 3. Back_end/, 4. project_root/
+    project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+    
+    if source == "backend":
+        log_path = os.path.join(project_root, "Back_end", "logs", "backend.log")
+    elif source == "frontend":
+        log_path = os.path.join(project_root, "frontend", "logs", "frontend.log")
+    else:
+        raise HTTPException(status_code=400, detail="Invalid log source")
+        
+    content = get_last_n_lines(log_path)
+    return {"content": content, "source": source, "timestamp": datetime.now().isoformat()}
+
+@router.websocket("/ws/admin/logs/{source}")
+async def admin_logs_ws(websocket: WebSocket, source: str):
+    await websocket.accept()
+    
+    # Check session (simplified for WS)
+    if not websocket.cookies.get("admin_session"):
+        await websocket.send_text("Unauthorized")
+        await websocket.close()
+        return
+
+    project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+    
+    if source == "backend":
+        log_path = os.path.join(project_root, "Back_end", "logs", "backend.log")
+    elif source == "frontend":
+        log_path = os.path.join(project_root, "frontend", "logs", "frontend.log")
+    else:
+        await websocket.send_text("Invalid log source")
+        await websocket.close()
+        return
+
+    if not os.path.exists(log_path):
+        await websocket.send_text(f"Log file not found: {log_path}")
+        await websocket.close()
+        return
+
+    try:
+        with open(log_path, "r", encoding="utf-8", errors="replace") as f:
+            # Send last 100 lines initially
+            lines = f.readlines()
+            for line in lines[-100:]:
+                await websocket.send_text(line)
+            
+            # Tail the file
+            f.seek(0, os.SEEK_END)
+            while True:
+                line = f.readline()
+                if not line:
+                    await asyncio.sleep(0.5)
+                    continue
+                await websocket.send_text(line)
+    except WebSocketDisconnect:
+        pass
+    except Exception as e:
+        try:
+            await websocket.send_text(f"Error: {str(e)}")
+        except:
+            pass
+    finally:
+        try:
+            await websocket.close()
+        except:
+            pass
 
 # --- Admin API Routes ---
 
