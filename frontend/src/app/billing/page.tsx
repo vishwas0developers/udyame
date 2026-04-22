@@ -40,23 +40,29 @@ export default function BillingPage() {
   const [selectingPlan, setSelectingPlan] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchPlans = async () => {
       try {
-        const [plansRes, historyRes] = await Promise.all([
-          apiClient.get("/plans/plans"),
-          apiClient.get("/credits/history")
-        ]);
-        setPlans(plansRes.data);
-        setHistory(historyRes.data.transactions || []);
+        const response = await apiClient.get("/plans/plans");
+        setPlans(response.data);
       } catch (error) {
-        console.error("Failed to fetch billing data:", error);
-        toast.error("Failed to load plans. Please try again.");
+        console.error("Failed to fetch plans:", error);
+        toast.error("Failed to load plans.");
       } finally {
         setLoading(false);
       }
     };
 
-    fetchData();
+    const fetchHistory = async () => {
+      try {
+        const response = await apiClient.get("/credits/history");
+        setHistory(response.data.transactions || []);
+      } catch (error) {
+        console.error("Failed to fetch history:", error);
+      }
+    };
+
+    fetchPlans();
+    fetchHistory();
   }, []);
 
   const handleSelectPlan = async (planId: string) => {

@@ -20,6 +20,7 @@ export default function DashboardPage() {
 
   useEffect(() => {
     const token = searchParams.get("token");
+    const savedToken = localStorage.getItem("auth_token");
     
     const fetchUser = async (authToken: string) => {
       try {
@@ -35,31 +36,38 @@ export default function DashboardPage() {
           return;
         }
 
-        // Clean up URL
-        router.replace("/dashboard");
+        // Clean up URL if we had a token
+        if (token) {
+          router.replace("/dashboard");
+        }
       } catch (error) {
         console.error("Failed to fetch user:", error);
         toast.error("Authentication failed. Please login again.");
+        logout();
         router.push("/?auth=login");
       }
     };
 
+    // 1. Handle URL Token (Login redirection)
     if (token) {
       fetchUser(token);
-    } else if (!user) {
-      const savedToken = localStorage.getItem("auth_token");
+      return;
+    } 
+    
+    // 2. Handle existing session check
+    if (!user) {
       if (savedToken) {
         fetchUser(savedToken);
       } else {
         router.push("/?auth=login");
       }
     } else {
-      // For existing user session, verify plan
+      // 3. If already logged in, just check plan status
       if (!user.plan_id || !user.subscription_plan?.is_active) {
         router.replace("/billing");
       }
     }
-  }, [user, router, searchParams, setAuth]);
+  }, [router, searchParams, setAuth]); // Removed 'user' from dependencies to stop infinite loop
 
   if (!user || !user.subscription_plan?.is_active) {
     return (
