@@ -14,6 +14,7 @@ from app.db.session import get_db
 from app.routers.deps import get_current_user
 from app.models.all_models import User, QuestionBank, AIModel, CreditLedger, SubscriptionPlan
 from app.core import security
+from app.services import ai_discovery
 
 # Setup templates
 base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -33,6 +34,23 @@ class PlanModify(BaseModel):
     features: List[str]
     is_active: bool
     is_recommended: bool
+
+class ModelSave(BaseModel):
+    name: str
+    provider: str
+    model_id: str
+    api_endpoint: Optional[str] = None
+    is_active: bool = True
+    is_default: bool = False
+    supports_vision: bool = False
+    vision_details: Optional[str] = None
+    supports_text: bool = True
+    text_details: Optional[str] = None
+    supports_tools: bool = False
+    tools_details: Optional[str] = None
+    supports_thinking: bool = False
+    thinking_details: Optional[str] = None
+    fallback_priority: int = 99
 
 # --- Admin UI Routes ---
 
@@ -319,3 +337,93 @@ def review_question(
     
     db.commit()
     return {"message": f"Question {update.action} successfully"}
+
+# --- Model Management API ---
+
+@router.get("/api/admin/models/list")
+async def list_models(request: Request, db: Session = Depends(get_db)):
+    if not check_admin_auth(request):
+        raise HTTPException(status_code=401)
+    models = db.query(AIModel).order_by(AIModel.provider, AIModel.fallback_priority).all()
+    return models
+
+@router.post("/api/admin/models/save")
+async def save_model(request: Request, model_data: ModelSave, db: Session = Depends(get_db)):
+    if not check_admin_auth(request):
+        raise HTTPException(status_code=401)
+    
+    # Check if we are updating or creating
+    model = db.query(AIModel).filter(AIModel.model_id == model_data.model_id, AIModel.provider == model_data.provider).first()
+    
+    if not model:
+        model = AIModel(
+            model_id=model_data.model_id,
+            provider=model_data.provider
+        )
+        db.add(model)
+    
+    model.name = model_data.name
+    model.api_endpoint = model_data.api_endpoint
+    model.is_active = model_data.is_active
+    model.is_default = model_data.is_default
+    model.supports_vision = model_data.supports_vision
+    model.vision_details = model_data.vision_details
+    model.supports_text = model_data.supports_text
+    model.text_details = model_data.text_details
+    model.supports_tools = model_data.supports_tools
+    model.tools_details = model_data.tools_details
+    model.supports_thinking = model_data.supports_thinking
+    model.thinking_details = model_data.thinking_details
+    model.fallback_priority = model_data.fallback_priority
+    
+    # If this is set as default, unset other defaults for this provider
+    if model.is_default:
+        db.query(AIModel).filter(
+            AIModel.provider == model.provider, 
+            AIModel.id != model.id
+        ).update({"is_default": False})
+    
+    db.commit()
+    return {"status": "success", "message": "Model saved successfully"}
+
+@router.post("/api/admin/models/delete/{model_id}")
+async def delete_model(model_id: UUID, request: Request, db: Session = Depends(get_db)):
+    if not check_admin_auth(request):
+        raise HTTPException(status_code=401)
+    
+    model = db.query(AIModel).filter(AIModel.id == model_id).first()
+    if not model:
+        raise HTTPException(status_code=404, detail="Model not found")
+    
+    db.delete(model)
+    db.commit()
+    return {"status": "success", "message": "Model deleted successfully"}
+
+@router.post("/api/admin/models/set-default/{model_id}")
+async def set_default_model(model_id: UUID, request: Request, db: Session = Depends(get_db)):
+    if not check_admin_auth(request):
+        raise HTTPException(status_code=401)
+    
+    model = db.query(AIModel).filter(AIModel.id == model_id).first()
+    if not model:
+        raise HTTPException(status_code=404, detail="Model not found")
+    
+    # Unset others
+    db.query(AIModel).filter(
+        AIModel.provider == model.provider,
+        AIModel.id != model.id
+    ).update({"is_default": False})
+    
+    model.is_default = True
+    db.commit()
+    return {"status": "success", "message": f"{model.name} set as default for {model.provider}"}
+
+@router.get("/api/admin/models/fetch/{provider}")
+async def fetch_provider_models(provider: str, request: Request):
+    if not check_admin_auth(request):
+        raise HTTPException(status_code=401)
+    
+    # In a real app, we might want to allow passing a temporary key for discovery
+    # but for now we rely on the backend environment variables
+    models = await ai_discovery.fetch_models_for_provider(provider)
+    return models

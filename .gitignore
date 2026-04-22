@@ -47,3 +47,4 @@ docs/Back_end/venv/Lib/site-packages/alembic/util/messaging.py
 .agent/*
 *.md
 graphify-out/*
+Back_end/alembic/*

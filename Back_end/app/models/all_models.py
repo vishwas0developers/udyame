@@ -98,12 +98,27 @@ class QuestionBank(Base):
 class AIModel(Base):
     __tablename__ = "ai_models"
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    name = Column(String(100), unique=True, nullable=False)
+    name = Column(String(100), unique=True, nullable=False)  # Display Name
     provider = Column(String(50))  # openai, gemini, qwen, etc.
     api_endpoint = Column(String(500), nullable=True)
-    model_id = Column(String(100), nullable=False)
-    cost_per_1k_tokens = Column(Numeric(10, 4), default=0.0000)
+    model_id = Column(String(100), nullable=False)  # Technical ID
     is_active = Column(Boolean, default=True)
+    is_default = Column(Boolean, default=False)
+    
+    # Granular Capabilities
+    supports_vision = Column(Boolean, default=False)
+    vision_details = Column(String(500), nullable=True)
+    
+    supports_text = Column(Boolean, default=True)
+    text_details = Column(String(500), nullable=True)
+    
+    supports_tools = Column(Boolean, default=False)
+    tools_details = Column(String(500), nullable=True)
+    
+    supports_thinking = Column(Boolean, default=False)
+    thinking_details = Column(String(500), nullable=True)
+    
+    cost_per_1k_tokens = Column(Numeric(10, 4), default=0.0000)
     fallback_priority = Column(Integer, default=99)
     created_at = Column(DateTime, default=datetime.utcnow)
 
