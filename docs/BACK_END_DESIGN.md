@@ -26,11 +26,12 @@
 
 ## PAGE 4: SYSTEM LOGS & AUDIT TRAIL
 - **Layout**: Chronological timeline view (left line, nodes right), filter sidebar (left 20%, collapsible), main feed (right 80%), export dropdown top-right.
-- **Components**: Timeline nodes (colored dots by severity: blue info, amber warning, red error), Event cards (timestamp 12px mono, actor 13px bold, action description 14px, metadata expand accordion), Filter pills (date range, actor, action type, severity), Export menu (CSV/JSON dropdown, loading spinner on click).
+- **Workflow Update**: Integrated real-time WebSocket tailing for active console monitoring (bg-slate-950, indigo-400 timestamps).
+- **Components**: Timeline nodes (colored dots by severity: blue info, amber warning, red error), Event cards (timestamp 12px mono, actor 13px bold, action description 14px, metadata expand accordion), Filter pills (date range, actor, action type, severity), Source tabs (Backend/Frontend).
 - **Typography**: Timestamps (11px mono slate-500), Actor names (13px font-medium blue-600), Descriptions (14px slate-800), Metadata (12px slate-500 mono).
 - **States**: Hover on card (bg-slate-50, subtle left border highlight), Expanded metadata (smooth height transition, gray bg), Filter active (pill bg-blue-100 text-blue-800), Loading (timeline node pulse), Error fetching (inline banner with retry).
 - **Responsive**: Mobile (vertical stack, filters top horizontal scroll, compact cards), Desktop (side filter + timeline, full metadata inline).
-- **Micro-interactions**: Node pop on hover, accordion smooth expand, filter pill press, export progress ring.
+- **Micro-interactions**: Log entry fade-in, auto-scroll to bottom, accordion smooth expand, filter pill press, export progress ring.
 
 ## PAGE 5: USER & CREDIT MANAGEMENT
 - **Layout**: Master-detail view (left: searchable user list 30%, right: detail panel 70%), top stats bar (total users, active subs, avg credit burn), bulk credit top-up modal.
@@ -39,3 +40,11 @@
 - **States**: List item selected (bg-blue-50 border-l-4 blue-500), Credit low warning (amber pulse badge), Top-up processing (spinner + disabled), Success (green check + updated balance animation), Search highlight (yellow bg on match).
 - **Responsive**: Mobile (stacked list + detail toggle, horizontal scroll for stats, bottom sheet top-up), Desktop (split pane, inline stats, centered modal).
 - **Micro-interactions**: List selection slide, balance counter animation, search match flash, modal fade-scale, tier badge color transition.
+
+## PAGE 6: ADMIN LOGIN (Modal)
+- **Layout**: Fixed inset, bg-slate-950/80, backdrop-blur-sm.
+- **Components**: 
+    - **Login Card**: bg-slate-800, border-slate-700, max-w-md, rounded-2xl.
+    - **Inputs**: bg-slate-900, border-slate-700, pl-12 (with envelope/key icons).
+    - **Submit Button**: bg-indigo-600, shadow-indigo-500/20, py-4.
+- **Typography**: Title (2xl font-bold white), labels (slate-300).

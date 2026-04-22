@@ -8,6 +8,7 @@ graph TD
         Router --> Workspace["/workspace"]
         Router --> Admin["/admin"]
         Router --> Billing["/billing"]
+        Router --> Plans["/plans"]
 
         subgraph "State & Data Layer"
             UIState["Zustand Store\nUI State, Theme, Sidebar"]
@@ -17,6 +18,7 @@ graph TD
         subgraph "Component Layer"
             Chat["Chat Interface\nQ&A, Streaming, Self-Learn Feedback"]
             AdminQueue["Admin Panel\nQuestion Queue, Model Registry"]
+            LogsView["Admin Logs\nReal-time Log Viewer (WS)"]
             DocLib["Document Library\nGrid/List, Preview, Export"]
             Paywall["Billing & Plans\nComparison, Checkout, Usage"]
             CompanySelector["Company Workspace\nSidebar Nav, Smart Assistant"]
@@ -34,13 +36,16 @@ graph TD
         Workspace --> CompanySelector
         Planning --> Chat
         Admin --> AdminQueue
+        Admin --> LogsView
         Billing --> Paywall
+        Plans --> Paywall
 
         Dashboard --> ServerState
         Planning --> ServerState
         Workspace --> ServerState
         Admin --> ServerState
         Billing --> ServerState
+        Plans --> ServerState
 
         Chat -->|"Form Submission"| Forms
         AdminQueue -->|"CRUD Operations"| APIClient

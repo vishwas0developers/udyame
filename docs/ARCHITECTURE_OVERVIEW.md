@@ -26,12 +26,14 @@ This document provides a high-level overview of the **Udyame AI** platform, deta
     - **Credit Engine**: Manages user quotas and consumption.
     - **RAG Pipeline**: Uses **pgvector** for semantic search and contextual retrieval.
     - **DocGen**: Generates dynamic PDFs and Excel reports.
+- **Admin Panel**: A dedicated administrative hub for system governance, question review, and real-time log monitoring.
 - **AI Integration**: Unified routing via **LiteLLM** supporting multiple providers (Gemini, OpenAI, etc.).
 
 ### 4. Data & Infrastructure Layer
-- **PostgreSQL 16**: Primary relational database, enhanced with the **pgvector** extension for vector embeddings.
+- **PostgreSQL 16**: Relational database for production, enhanced with the **pgvector** extension for vector embeddings.
 - **Docker**: Containerization for the database and supporting services (managed via `docker-compose.yml`).
-- **Storage Subsystem**: Local/Laravel Storage FS integration for handling generated artifacts and templates.
+- **Storage Subsystem**: Integration with **Storage FS** (via local filesystem) for handling generated artifacts and templates.
+- **Log Management**: Unified logging system for both backend and frontend, accessible via the Admin Panel with real-time WebSocket tailing.
 
 ---
 

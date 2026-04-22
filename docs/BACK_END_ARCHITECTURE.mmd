@@ -13,6 +13,7 @@ graph TD
             AIRouter[AI Model Router\nLiteLLM, Fallback, Cost Calc]
             RAGSvc[RAG Pipeline\nEmbedding, Vector Search, Context]
             QuestionEngine[Question Engine\nPermanent, Contextual, Self-Learning]
+            LogSvc[Log Management\nUnified Logs, WebSocket Tailing]
             GuardRail[Security Filter\nPII Redaction, Compliance Check]
             DocGen[Document Generator\nPDF/Excel/Template Engine]
         end
@@ -23,6 +24,7 @@ graph TD
         Services --> AIRouter
         Services --> RAGSvc
         Services --> QuestionEngine
+        Services --> LogSvc
         Services --> GuardRail
         Services --> DocGen
 
@@ -47,6 +49,7 @@ graph TD
         RAGSvc -->|Vector Search & Context| PGVec
         RAGSvc -->|Cache Retrieval Results| Redis
         GuardRail -->|Audit & Safety Logs| PG
+        LogSvc -->|Read/Stream Logs| MinIO
         DocGen -->|Store Binary Files| MinIO
         DocGen -->|Save Metadata| PG
         QuestionEngine -->|CRUD Question Bank| PG

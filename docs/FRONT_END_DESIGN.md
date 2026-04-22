@@ -34,10 +34,21 @@
 - **Responsive**: Mobile (stacked filters, single column cards, viewer fullscreen), Desktop (inline filters, multi-column grid, modal 80vw max-width).
 - **Micro-interactions**: Card hover lift, filter chip tap bounce, modal fade-in + scale-95 to 100, download progress bar.
 
-## PAGE 5: BILLING & SUBSCRIPTION
-- **Layout**: Pricing section (3-card horizontal stack, middle card elevated ring-2 ring-blue-500 shadow-xl), Usage dashboard (chart area + ledger table below), Payment modal (centered, secure lock icon).
-- **Components**: Plan cards (bg-white rounded-2xl p-6, feature list with check icons, CTA button variant per tier), Credit meter (horizontal progress bar with segment markers, hover tooltip), Ledger table (zebra striping, sortable headers, pagination), Checkout form (card input fields with brand detection icons).
-- **Typography**: Plan names (20px bold, slate-900), Prices (32px font-extrabold blue-600), Feature text (14px slate-600), Table headers (12px uppercase tracking-wide slate-500).
-- **States**: Card hover (shadow-xl, translate-y-[-4px]), Active plan badge (bg-green-100 text-green-800 px-2 py-1 rounded), Processing (spinner + disabled inputs), Success (confetti + redirect countdown).
-- **Responsive**: Mobile (stacked plans, horizontal scroll for ledger, bottom sheet checkout), Desktop (inline layout, table full-width, modal side-by-side with order summary).
-- **Micro-interactions**: Plan toggle switch (monthly/yearly pill), progress bar fill animation, table row hover highlight, button ripple effect.
+## PAGE 5: GROWTH PLANS (/plans)
+- **Layout**: Centered container, 3-column grid (mobile: 1-col), max-width 6xl.
+- **Components**: 
+    - **Plan Card**: Transition-all, duration-300, relative. Recommended card: border-indigo-500, shadow-2xl, scale-105.
+    - **Badge**: "Popular Choice" (bg-indigo-600, uppercase, tracking-widest) positioned absolute top-center.
+    - **Price**: 4xl font-black zinc-900.
+    - **Unit Indicator**: bg-indigo-50, border-indigo-100, zap icon.
+- **Typography**: Heading (5xl font-black, tracking-tight), Plan name (2xl font-bold).
+- **Micro-interactions**: Card scale on hover, buy button shadow pulse.
+
+## PAGE 6: CHECKOUT & BILLING (/billing)
+- **Layout**: Two-column layout (Left: Order Summary, Right: Checkout), max-width 4xl.
+- **Components**: 
+    - **Order Summary Card**: bg-slate-50 header, dashed divider for total.
+    - **Checkout Card**: border-indigo-100, shadow-xl shadow-indigo-100/50.
+    - **Payment Placeholder**: bg-slate-50 border-dashed, italic text.
+- **Typography**: Total price (2xl font-black indigo-600), Headings (3xl font-bold).
+- **States**: Processing (Loader2 spinner, disabled button), Success (Confetti + redirect).

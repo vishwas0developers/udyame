@@ -16,8 +16,10 @@ graph TB
     subgraph BackendAPI["Intelligence Layer (Backend)"]
         FastAPI["FastAPI / Uvicorn"]
         Services["Business Services\nIntent, Credits, RAG, DocGen"]
+        AdminUI["Admin Panel\nGovernance & Logs"]
         LLM[AI Models\nGemini, OpenAI, LiteLLM]
         FastAPI --> Services
+        FastAPI --> AdminUI
         Services --> LLM
     end
 
@@ -39,6 +41,7 @@ graph TB
     style RUN fill:#f9f,stroke:#333,stroke-width:2px
     style NextJS fill:#000,color:#fff,stroke:#333
     style FastAPI fill:#05998b,color:#fff,stroke:#333
+    style AdminUI fill:#673ab7,color:#fff,stroke:#333
     style Postgres fill:#336791,color:#fff,stroke:#333
     style Docker fill:#2496ed,color:#fff,stroke:#333
     style Watchdog fill:#ff9800,stroke:#333
