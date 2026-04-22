@@ -21,6 +21,7 @@ This document provides a high-level overview of the **Udyame AI** platform, deta
 
 ### 3. Backend Intelligence Layer (`/Back_end`)
 - **Framework**: FastAPI (Python 3.12).
+- **Architecture**: Dual-Port Setup (Port 5012: Admin SSR Panel | Port 5014: Public API).
 - **Core Services**:
     - **Intent Engine**: Classifies user queries into business domains.
     - **Credit Engine**: Manages user quotas and consumption.
@@ -31,7 +32,7 @@ This document provides a high-level overview of the **Udyame AI** platform, deta
 
 ### 4. Data & Infrastructure Layer
 - **PostgreSQL 16**: Relational database for production, enhanced with the **pgvector** extension for vector embeddings.
-- **Docker**: Containerization for the database and supporting services (managed via `docker-compose.yml`).
+- **Docker Ecosystem**: Orchestrated via `docker-compose.yml`, including **Postgres, Redis, MinIO, Celery Worker, and Celery Beat**.
 - **Storage Subsystem**: Integration with **Storage FS** (via local filesystem) for handling generated artifacts and templates.
 - **Log Management**: Unified logging system for both backend and frontend, accessible via the Admin Panel with real-time WebSocket tailing.
 
