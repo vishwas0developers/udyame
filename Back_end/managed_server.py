@@ -89,58 +89,68 @@ class RestartHandler(FileSystemEventHandler):
             os.makedirs(log_dir)
         log_file_path = os.path.join(log_dir, "backend.log")
 
-        if self.process:
-            print("\n[WATCHDOG] Change detected! Restarting Udyame AI Backend...")
-            self.process.terminate()
-            try:
-                self.process.wait(timeout=5)
-            except subprocess.TimeoutExpired:
-                self.process.kill()
+        if hasattr(self, 'processes') and self.processes:
+            print("\n[WATCHDOG] Change detected! Restarting Udyame AI Services...")
+            for p in self.processes:
+                p.terminate()
+                try:
+                    p.wait(timeout=5)
+                except subprocess.TimeoutExpired:
+                    p.kill()
+            self.processes = []
         else:
-            print("\n[WATCHDOG] Initializing Udyame AI Backend...")
+            print("\n[WATCHDOG] Initializing Udyame AI Services...")
+            self.processes = []
         
-        # Start uvicorn as a subprocess
-        cmd = [
-            sys.executable, "-m", "uvicorn", 
-            self.app_module, 
-            "--host", "0.0.0.0", 
-            "--port", "5012"
+        # Define services to launch
+        services = [
+            {"name": "ADMIN (SSR)", "port": "5012", "mode": "ADMIN"},
+            {"name": "PUBLIC API", "port": "5014", "mode": "API"}
         ]
         
-        try:
-            print(f"[WATCHDOG] Executing: {' '.join(cmd)}")
-            # Open log file in append mode
-            log_file = open(log_file_path, "a", encoding="utf-8")
-            log_file.write(f"\n--- Process Started at {time.strftime('%Y-%m-%d %H:%M:%S')} ---\n")
-            log_file.flush()
+        # Open log file in append mode
+        log_file = open(log_file_path, "a", encoding="utf-8")
+        log_file.write(f"\n--- System Start at {time.strftime('%Y-%m-%d %H:%M:%S')} ---\n")
+        log_file.flush()
+
+        for svc in services:
+            cmd = [
+                sys.executable, "-m", "uvicorn", 
+                self.app_module, 
+                "--host", "0.0.0.0", 
+                "--port", svc["port"]
+            ]
             
-            self.process = subprocess.Popen(
-                cmd, 
-                cwd=self.root_dir, 
-                stdout=subprocess.PIPE, 
-                stderr=subprocess.STDOUT,
-                bufsize=1, # Line buffered
-                universal_newlines=True,
-                text=True
-            )
+            env = os.environ.copy()
+            env["APP_MODE"] = svc["mode"]
             
-            # Start a thread to stream logs to both stdout and the file
-            log_thread = threading.Thread(
-                target=self._stream_logs, 
-                args=(self.process.stdout, log_file),
-                daemon=True
-            )
-            log_thread.start()
-            
-            # Check for immediate crash (briefly)
-            time.sleep(1)
-            if self.process.poll() is not None:
-                print(f"[ERROR] Backend failed to start with exit code {self.process.returncode}. See logs/backend.log")
-                return
-            
-            print(f"[SUCCESS] Backend process launched. Monitoring logs...")
-        except Exception as e:
-            print(f"[ERROR] Could not start backend: {e}")
+            try:
+                print(f"[WATCHDOG] Launching {svc['name']} on port {svc['port']}...")
+                
+                process = subprocess.Popen(
+                    cmd, 
+                    cwd=self.root_dir, 
+                    stdout=subprocess.PIPE, 
+                    stderr=subprocess.STDOUT,
+                    env=env,
+                    bufsize=1,
+                    universal_newlines=True,
+                    text=True
+                )
+                self.processes.append(process)
+                
+                # Start a thread to stream logs
+                log_thread = threading.Thread(
+                    target=self._stream_logs, 
+                    args=(process.stdout, log_file),
+                    daemon=True
+                )
+                log_thread.start()
+                
+            except Exception as e:
+                print(f"[ERROR] Could not start {svc['name']}: {e}")
+
+        print(f"[SUCCESS] {len(self.processes)} services launched. Monitoring logs...")
 
     def on_modified(self, event):
         if event.is_directory:
@@ -172,8 +182,9 @@ def main():
     except KeyboardInterrupt:
         print("\n[WATCHDOG] Stopping services...")
         observer.stop()
-        if event_handler.process:
-            event_handler.process.terminate()
+        if hasattr(event_handler, 'processes'):
+            for p in event_handler.processes:
+                p.terminate()
     observer.join()
 
 if __name__ == "__main__":

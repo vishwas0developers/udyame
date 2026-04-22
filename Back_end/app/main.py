@@ -28,11 +28,18 @@ def get_application() -> FastAPI:
 
     from app.routers import auth, planning, credits, billing, admin_panel
 
-    _app.include_router(auth.router, prefix=f"{settings.API_V1_STR}/auth", tags=["Authentication"])
-    _app.include_router(planning.router, prefix=f"{settings.API_V1_STR}/planning", tags=["Planning"])
-    _app.include_router(credits.router, prefix=f"{settings.API_V1_STR}/credits", tags=["Credits"])
-    _app.include_router(billing.router, prefix=f"{settings.API_V1_STR}/plans", tags=["Billing"])
-    _app.include_router(admin_panel.router, prefix="", tags=["Admin Panel"])
+    app_mode = os.getenv("APP_MODE", "BOTH").upper()
+    
+    # API Routers
+    if app_mode in ["API", "BOTH"]:
+        _app.include_router(auth.router, prefix=f"{settings.API_V1_STR}/auth", tags=["Authentication"])
+        _app.include_router(planning.router, prefix=f"{settings.API_V1_STR}/planning", tags=["Planning"])
+        _app.include_router(credits.router, prefix=f"{settings.API_V1_STR}/credits", tags=["Credits"])
+        _app.include_router(billing.router, prefix=f"{settings.API_V1_STR}/plans", tags=["Billing"])
+    
+    # Admin Routers
+    if app_mode in ["ADMIN", "BOTH"]:
+        _app.include_router(admin_panel.router, prefix="", tags=["Admin Panel"])
 
 
     @_app.get("/health")

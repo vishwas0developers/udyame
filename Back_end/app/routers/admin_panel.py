@@ -156,12 +156,15 @@ async def admin_questions(request: Request, db: Session = Depends(get_db)):
     })
 
 @router.get("/models", response_class=HTMLResponse)
-async def admin_models(request: Request):
-    return templates.TemplateResponse("dashboard.html", {
+async def admin_models(request: Request, db: Session = Depends(get_db)):
+    if not check_admin_auth(request):
+        return RedirectResponse(url="/login?next=/models")
+        
+    models = db.query(AIModel).order_by(AIModel.fallback_priority).all()
+    return templates.TemplateResponse("models.html", {
         "request": request, 
-        "active_page": "models", 
-        "requires_login": not check_admin_auth(request),
-        "stats": {"users": 0, "pending_q": 0, "models": 0, "plans": 0}
+        "active_page": "models",
+        "models": models
     })
 
 @router.get("/users", response_class=HTMLResponse)

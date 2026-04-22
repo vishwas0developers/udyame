@@ -231,7 +231,8 @@ start "udyame Frontend" /D "%FRONTEND_DIR%" powershell -NoExit -Command "$env:WA
 echo.
 echo ==========================================================
 echo [DONE] Startup commands sent to separate windows.
-echo Backend should be on http://localhost:5012
+echo Backend Admin should be on http://localhost:5012/dashboard
+echo Backend API should be on http://localhost:5014/api/v1
 echo Frontend should be on http://localhost:3000
 echo [INFO] Review any error shown above before closing this launcher window.
 echo ==========================================================
