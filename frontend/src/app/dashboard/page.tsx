@@ -42,9 +42,8 @@ export default function DashboardPage() {
         }
       } catch (error) {
         console.error("Failed to fetch user:", error);
-        toast.error("Authentication failed. Please login again.");
+        // Remove toast and redirect to avoid redundant messages and unwanted URL changes
         logout();
-        router.push("/?auth=login");
       }
     };
 
@@ -58,8 +57,6 @@ export default function DashboardPage() {
     if (!user) {
       if (savedToken) {
         fetchUser(savedToken);
-      } else {
-        router.push("/?auth=login");
       }
     } else {
       // 3. If already logged in, just check plan status

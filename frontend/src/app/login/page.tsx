@@ -7,9 +7,8 @@ export default function LoginPage() {
   const router = useRouter();
 
   useEffect(() => {
-    // Redirect to landing page and signal that the login modal should open
-    router.replace("/?auth=login");
-  }, [router]);
+    // We stay on this page and let GlobalAuthModal handle the popup
+  }, []);
 
   return (
     <div className="min-h-screen bg-zinc-950 flex items-center justify-center">

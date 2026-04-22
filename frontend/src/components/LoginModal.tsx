@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { 
   Dialog, 
@@ -12,14 +12,16 @@ import { useAuthStore } from "@/store/useAuthStore";
 import apiClient from "@/lib/api-client";
 import { toast } from "sonner";
 import { Bot, Eye, EyeOff, CheckCircle2 } from "lucide-react";
+import axios from "axios";
 
 interface LoginModalProps {
   isOpen: boolean;
   onClose: () => void;
   initialMode?: "login" | "signup";
+  isClosable?: boolean;
 }
 
-export function LoginModal({ isOpen, onClose, initialMode = "login" }: LoginModalProps) {
+export function LoginModal({ isOpen, onClose, initialMode = "login", isClosable = true }: LoginModalProps) {
   const [mode, setMode] = useState<"login" | "signup" | "magic-link">(initialMode);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -27,18 +29,22 @@ export function LoginModal({ isOpen, onClose, initialMode = "login" }: LoginModa
   const [loading, setLoading] = useState(false);
   const [isVerificationSent, setIsVerificationSent] = useState(false);
   const [isMagicLinkSent, setIsMagicLinkSent] = useState(false);
-  
-  const router = useRouter();
-  const setAuth = useAuthStore((state) => state.setAuth);
+  const [prevOpen, setPrevOpen] = useState(isOpen);
 
-  // Sync mode with initialMode when modal opens
-  useEffect(() => {
+  // Sync mode with initialMode during render phase to avoid cascading renders
+  if (isOpen !== prevOpen) {
+    setPrevOpen(isOpen);
     if (isOpen) {
       setMode(initialMode);
       setIsVerificationSent(false);
       setIsMagicLinkSent(false);
     }
-  }, [isOpen, initialMode]);
+  }
+  
+  const router = useRouter();
+  const setAuth = useAuthStore((state) => state.setAuth);
+
+
 
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -57,7 +63,7 @@ export function LoginModal({ isOpen, onClose, initialMode = "login" }: LoginModa
         const { access_token } = response.data;
         // In real app, fetch profile after login
         setAuth(
-          { id: "mock-id", email, subscription_tier: "USER", credit_balance: 50 },
+          { id: "mock-id", email, plan_id: "free", credit_balance: 50, full_name: email.split("@")[0] },
           access_token
         );
 
@@ -73,8 +79,11 @@ export function LoginModal({ isOpen, onClose, initialMode = "login" }: LoginModa
         setIsMagicLinkSent(true);
         toast.success("Magic login link sent!");
       }
-    } catch (error: any) {
-      toast.error(error.response?.data?.detail || `${mode === "login" ? "Login" : "Registration"} failed`);
+    } catch (error: unknown) {
+      const errorMessage = axios.isAxiosError(error) 
+        ? error.response?.data?.detail 
+        : `${mode === "login" ? "Login" : "Registration"} failed`;
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -85,7 +94,8 @@ export function LoginModal({ isOpen, onClose, initialMode = "login" }: LoginModa
       setLoading(true);
       const response = await apiClient.get("/auth/google/login");
       window.location.href = response.data.url;
-    } catch (error: any) {
+    } catch (error: unknown) {
+      console.error("Google Login Error:", error);
       toast.error("Google login failed");
       setLoading(false);
     }
@@ -93,15 +103,24 @@ export function LoginModal({ isOpen, onClose, initialMode = "login" }: LoginModa
 
   if (isVerificationSent || isMagicLinkSent) {
     return (
-      <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-        <DialogContent className="max-w-[420px] p-0 overflow-hidden border-none bg-transparent shadow-none ring-0 focus:outline-none">
+      <Dialog 
+        open={isOpen} 
+        onOpenChange={(open) => {
+          if (!open && !isClosable) return;
+          if (!open) onClose();
+        }}
+      >
+        <DialogContent 
+          showCloseButton={isClosable}
+          className="max-w-[420px] p-0 overflow-hidden border-none bg-transparent shadow-none ring-0 focus:outline-none"
+        >
           <main className="w-full bg-[#ffffff]/80 backdrop-blur-xl rounded-[1.5rem] p-10 border border-white/40 shadow-[0_20px_40px_rgba(11,28,48,0.06)] flex flex-col items-center text-center">
             <div className="bg-emerald-50 p-4 rounded-full mb-6">
               <CheckCircle2 className="h-12 w-12 text-emerald-500" />
             </div>
             <h1 className="font-semibold text-2xl tracking-tight text-[#0b1c30] mb-2">Check your email</h1>
             <p className="text-sm text-[#434655] font-medium tracking-wide mb-8">
-              We've sent a {isMagicLinkSent ? "magic login link" : "verification link"} to <span className="text-[#004ac6] font-bold">{email}</span>.
+              We&apos;ve sent a {isMagicLinkSent ? "magic login link" : "verification link"} to <span className="text-[#004ac6] font-bold">{email}</span>.
             </p>
             <Button 
               onClick={onClose}
@@ -116,8 +135,17 @@ export function LoginModal({ isOpen, onClose, initialMode = "login" }: LoginModa
   }
 
   return (
-    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-[420px] p-0 overflow-hidden border-none bg-transparent shadow-none ring-0 focus:outline-none">
+    <Dialog 
+      open={isOpen} 
+      onOpenChange={(open) => {
+        if (!open && !isClosable) return;
+        if (!open) onClose();
+      }}
+    >
+      <DialogContent 
+        showCloseButton={isClosable}
+        className="max-w-[420px] p-0 overflow-hidden border-none bg-transparent shadow-none ring-0 focus:outline-none"
+      >
         <main className="w-full bg-[#ffffff]/80 backdrop-blur-xl rounded-[1.5rem] p-10 border border-white/40 shadow-[0_20px_40px_rgba(11,28,48,0.06)] flex flex-col items-center">
           {/* Logo & Brand */}
           <div className="flex items-center gap-2 mb-8">
@@ -232,7 +260,7 @@ export function LoginModal({ isOpen, onClose, initialMode = "login" }: LoginModa
           </Button>
 
           <div className="mt-8 text-sm text-[#434655] text-center w-full">
-            {mode === "login" || mode === "magic-link" ? "Don't have an account?" : "Already have an account?"}
+            {mode === "login" || mode === "magic-link" ? "Don&apos;t have an account?" : "Already have an account?"}
             <button 
               onClick={() => setMode(mode === "login" || mode === "magic-link" ? "signup" : "login")}
               className="font-medium text-[#004ac6] hover:text-[#2563eb] transition-colors ml-1"

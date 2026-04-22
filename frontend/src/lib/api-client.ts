@@ -1,4 +1,5 @@
 import axios from "axios";
+import { useAuthStore } from "@/store/useAuthStore";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5014/api/v1";
 
@@ -85,10 +86,10 @@ apiClient.interceptors.response.use(
         return apiClient(originalRequest);
       } catch (refreshError) {
         processQueue(refreshError, null);
-        // Refresh failed, logout user
+        // Refresh failed, logout user and show login popup instead of redirecting
         localStorage.removeItem("auth_token");
         if (typeof window !== "undefined") {
-          window.location.href = "/?auth=login";
+          useAuthStore.getState().logout();
         }
         return Promise.reject(refreshError);
       } finally {
