@@ -1,0 +1,86 @@
+{% extends "layout.html" %}
+
+{% block title %}User Management - Udyame Admin{% endblock %}
+{% block header %}User Management{% endblock %}
+
+{% block content %}
+<div class="bg-slate-800 rounded-xl border border-slate-700 overflow-hidden">
+    <div class="p-6 border-b border-slate-700 flex justify-between items-center">
+        <h3 class="text-xl font-semibold text-white">Registered Users</h3>
+        <div class="flex gap-2">
+            <span class="px-3 py-1 bg-indigo-500/10 text-indigo-400 rounded-lg text-xs font-bold border border-indigo-500/20">
+                Total: {{ users|length }}
+            </span>
+        </div>
+    </div>
+    
+    <div class="overflow-x-auto">
+        <table class="w-full text-left">
+            <thead class="bg-slate-700/50 text-slate-400 text-xs uppercase tracking-wider">
+                <tr>
+                    <th class="px-6 py-4">User Details</th>
+                    <th class="px-6 py-4">Plan Status</th>
+                    <th class="px-6 py-4">Credits</th>
+                    <th class="px-6 py-4">Account Status</th>
+                    <th class="px-6 py-4">Joined Date</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-700">
+                {% for user in users %}
+                <tr class="hover:bg-slate-700/30 transition group">
+                    <td class="px-6 py-4">
+                        <div class="flex flex-col">
+                            <span class="text-sm font-bold text-white">{{ user.full_name or 'N/A' }}</span>
+                            <span class="text-xs text-slate-500">{{ user.email }}</span>
+                        </div>
+                    </td>
+                    <td class="px-6 py-4">
+                        {% if user.subscription_plan %}
+                        <div class="flex flex-col gap-1">
+                            <span class="text-xs font-bold text-indigo-400">{{ user.subscription_plan.name }}</span>
+                            <span class="text-[10px] text-slate-500 uppercase">Expires: N/A</span>
+                        </div>
+                        {% else %}
+                        <span class="text-xs text-slate-500 italic">No Active Plan</span>
+                        {% endif %}
+                    </td>
+                    <td class="px-6 py-4">
+                        <span class="text-sm font-black text-white">{{ user.credit_balance }}</span>
+                        <span class="text-[10px] text-slate-500 ml-1">Units</span>
+                    </td>
+                    <td class="px-6 py-4">
+                        {% if user.is_verified %}
+                        <span class="px-2 py-1 bg-emerald-500/10 text-emerald-400 rounded-full text-[10px] font-bold border border-emerald-500/20">
+                            Verified
+                        </span>
+                        {% else %}
+                        <span class="px-2 py-1 bg-amber-500/10 text-amber-400 rounded-full text-[10px] font-bold border border-amber-500/20">
+                            Pending
+                        </span>
+                        {% endif %}
+                        
+                        {% if user.role == "ADMIN" %}
+                        <span class="ml-2 px-2 py-1 bg-purple-500/10 text-purple-400 rounded-full text-[10px] font-bold border border-purple-500/20">
+                            Admin
+                        </span>
+                        {% endif %}
+                    </td>
+                    <td class="px-6 py-4 text-slate-400 text-sm">
+                        {{ user.created_at.strftime('%b %d, %Y') }}
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="5" class="px-6 py-20 text-center text-slate-500">
+                        <div class="flex flex-col items-center">
+                            <i class="fas fa-users-slash text-4xl mb-4 opacity-20"></i>
+                            <p>No users found in the system.</p>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

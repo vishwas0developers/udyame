@@ -165,12 +165,18 @@ async def admin_models(request: Request):
     })
 
 @router.get("/users", response_class=HTMLResponse)
-async def admin_users(request: Request):
-    return templates.TemplateResponse("dashboard.html", {
-        "request": request, 
-        "active_page": "users", 
-        "requires_login": not check_admin_auth(request),
-        "stats": {"users": 0, "pending_q": 0, "models": 0, "plans": 0}
+async def admin_users(request: Request, db: Session = Depends(get_db)):
+    requires_login = not check_admin_auth(request)
+    users = []
+    if not requires_login:
+        from sqlalchemy.orm import joinedload
+        users = db.query(User).options(joinedload(User.subscription_plan)).order_by(User.created_at.desc()).all()
+        
+    return templates.TemplateResponse("users.html", {
+        "request": request,
+        "active_page": "users",
+        "requires_login": requires_login,
+        "users": users
     })
 
 @router.get("/logout")
