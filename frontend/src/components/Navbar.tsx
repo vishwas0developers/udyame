@@ -40,7 +40,7 @@ export function Navbar({ showPricingLink = true }: NavbarProps) {
           <div className="hidden md:flex items-center gap-8">
             <Link href="/#features" className="text-sm font-medium text-zinc-600 hover:text-indigo-600 transition-colors">Features</Link>
             {showPricingLink && (
-              <Link href="/billing" className="text-sm font-medium text-zinc-600 hover:text-indigo-600 transition-colors">Pricing</Link>
+              <Link href="/plans" className="text-sm font-medium text-zinc-600 hover:text-indigo-600 transition-colors">Pricing</Link>
             )}
             
             {mounted && (
@@ -94,7 +94,7 @@ export function Navbar({ showPricingLink = true }: NavbarProps) {
         <div className="md:hidden bg-white border-b border-zinc-200 p-4 space-y-4 animate-in slide-in-from-top-2">
           <Link href="/#features" className="block text-sm font-medium text-zinc-600 px-2 py-1" onClick={() => setIsMobileMenuOpen(false)}>Features</Link>
           {showPricingLink && (
-            <Link href="/billing" className="block text-sm font-medium text-zinc-600 px-2 py-1" onClick={() => setIsMobileMenuOpen(false)}>Pricing</Link>
+            <Link href="/plans" className="block text-sm font-medium text-zinc-600 px-2 py-1" onClick={() => setIsMobileMenuOpen(false)}>Pricing</Link>
           )}
           {mounted && (
             isAuthenticated ? (

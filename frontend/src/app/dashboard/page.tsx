@@ -32,7 +32,7 @@ export default function DashboardPage() {
         
         // Redirection logic: If no plan or plan is inactive
         if (!userData.plan_id || !userData.subscription_plan?.is_active) {
-          router.replace("/billing");
+          router.replace("/plans");
           return;
         }
 
@@ -64,7 +64,7 @@ export default function DashboardPage() {
     } else {
       // 3. If already logged in, just check plan status
       if (!user.plan_id || !user.subscription_plan?.is_active) {
-        router.replace("/billing");
+        router.replace("/plans");
       }
     }
   }, [router, searchParams, setAuth]); // Removed 'user' from dependencies to stop infinite loop
