@@ -2,46 +2,50 @@
 
 This document provides a high-level overview of the **Udyame AI** platform, detailing how the various components interact to provide business intelligence and document automation services.
 
-## System Architecture Diagram
+---
+
+## 🌐 System Architecture Diagram
 
 ![System Architecture](./SYSTEM_ARCHITECTURE.mmd)
 
-## Core Components
+---
+
+## 🚀 Core Components
 
 ### 1. Developer & Launch Layer (`/`)
-- **[run.bat](../run.bat)**: The main entry point for the entire project. It orchestrates environment setup, dependency management, and service launching.
-- **[managed_server.py](../Back_end/managed_server.py)**: A custom self-healing watchdog for the backend. It resolves port conflicts (e.g., local Postgres vs. Docker) and provides hot-reloading for the FastAPI server during development.
+- **[run.bat](../run.bat)**: The main entry point. It orchestrates environment setup, `.env` validation, dependency management, and service launching.
+- **[managed_server.py](../Back_end/managed_server.py)**: A custom self-healing watchdog. It resolves port conflicts and provides hot-reloading for the FastAPI server.
 
 ### 2. Frontend Application (`/frontend`)
-- **Framework**: Next.js 15 with App Router.
-- **Styling**: TailwindCSS 4 and Shadcn UI.
-- **State Management**: **Zustand** for UI state and **React Query** for server-side data synchronization.
-- **Authentication**: Firebase Authentication for secure user onboarding.
-- **Features**: Dashboard, Planning Wizard, Document Library, and Billing Management.
+- **Framework**: Next.js 15 with App Router & React 19.
+- **State Management**: **Zustand** (UI State) and **React Query** (Server State).
+- **Security**: Firebase Authentication for secure user onboarding and RBAC.
 
 ### 3. Backend Intelligence Layer (`/Back_end`)
 - **Framework**: FastAPI (Python 3.12).
-- **Architecture**: Dual-Port Setup (Port 5012: Admin SSR Panel | Port 5014: Public API).
+- **Architecture**: Dual-Port Setup (Port 5012: Admin SSR | Port 5014: Public API).
 - **Core Services**:
-    - **Intent Engine**: Classifies user queries into business domains.
-    - **Credit Engine**: Manages user quotas and consumption.
-    - **RAG Pipeline**: Uses **pgvector** for semantic search and contextual retrieval.
-    - **DocGen**: Generates dynamic PDFs and Excel reports.
-- **Admin Panel**: A dedicated administrative hub for system governance, question review, and real-time log monitoring.
-- **AI Integration**: Unified routing via **LiteLLM** supporting multiple providers (Gemini, OpenAI, etc.).
+    - **Intent Engine**: NLP-based query classification.
+    - **RAG Pipeline**: Semantic search using **pgvector**.
+    - **Async Processing**: Dedicated **Celery Workers** and **Celery Beat** for background tasks and scheduled jobs.
+    - **Schema Mgmt**: Automated **Database Migrations** for reliable schema updates.
+- **AI Integration**: Unified routing via **LiteLLM** (Gemini, OpenAI, etc.).
 
 ### 4. Data & Infrastructure Layer
-- **PostgreSQL 16**: Relational database for production, enhanced with the **pgvector** extension for vector embeddings.
-- **Docker Ecosystem**: Orchestrated via `docker-compose.yml`, including **Postgres, Redis, MinIO, Celery Worker, and Celery Beat**.
-- **Storage Subsystem**: Integration with **Storage FS** (via local filesystem) for handling generated artifacts and templates.
-- **Log Management**: Unified logging system for both backend and frontend, accessible via the Admin Panel with real-time WebSocket tailing.
+- **PostgreSQL 16**: Relational and vector data store with `pgvector`.
+- **Docker Ecosystem**: Orchestrated via `docker-compose.yml`, including **Postgres, Redis, and MinIO**.
+- **Storage Subsystem**: **MinIO** acts as the primary S3-compatible object store for documents, templates, and audit logs.
+- **Log Management**: Unified logging system with real-time WebSocket tailing from MinIO-stored logs.
 
 ---
 
-## Detailed Documentation
+## 📖 Detailed Documentation
 
-For deeper dives into specific layers, please refer to:
-- **[Backend Architecture Detail](./BACK_END_ARCHITECTURE.mmd)**
-- **[Frontend Architecture Detail](./FRONT_END_ARCHITECTURE.mmd)**
-- **[Installation Flow](./INSTALLATION_FLOW.mmd)**
-- **[Installation Guide](./INSTALLATION_GUIDE.md)**
+| Document | Description |
+| :--- | :--- |
+| **[Backend Architecture Detail](./BACK_END_ARCHITECTURE.mmd)** | Service mesh, controllers, and task workers. |
+| **[Frontend Architecture Detail](./FRONT_END_ARCHITECTURE.mmd)** | Routing, state, and UI component logic. |
+| **[Installation Flow](./INSTALLATION_FLOW.mmd)** | Step-by-step logic of the deployment lifecycle. |
+
+---
+*Last Updated: April 22, 2026 | Udyame AI Engineering Team*

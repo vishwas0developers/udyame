@@ -15,7 +15,11 @@ graph TD
     WaitDocker -->|Success| RunCompose["Docker Compose Up -d<br/>(PG, Redis, MinIO, Celery, Beat)"]
     IsDockerRunning -->|Yes| RunCompose
     
-    RunCompose --> DepCheck[Step 1: System Dependency Check]
+    RunCompose --> EnvCheck{Check .env File}
+    EnvCheck -->|Missing| CopyEnv[Copy .env.example to .env]
+    EnvCheck -->|Exists| DepCheck[Step 1: System Dependency Check]
+    CopyEnv --> DepCheck
+    
     DepCheck --> CheckPython[Check Python]
     DepCheck --> CheckNode[Check Node.js]
     DepCheck --> CheckFiles[Verify Folder Structure]
@@ -23,18 +27,17 @@ graph TD
     CheckPython & CheckNode & CheckFiles --> BEPrep[Step 2: Backend Prep]
     
     subgraph BackendSetup["Backend Environment Setup"]
-        BEPrep --> VenvCheck{Venv Exists?}
-        VenvCheck -->|No/Broken| CreateVenv[Create Python Venv]
-        VenvCheck -->|Yes| PipCheck[Check Pip in Venv]
-        CreateVenv --> PipCheck
-        PipCheck --> PipUpgrade[Upgrade Pip]
-        PipUpgrade --> PipInstall[Install requirements.txt]
+        BEPrep --> VenvCheck{Venv Valid?}
+        VenvCheck -->|No| CreateVenv[Create Python Venv]
+        CreateVenv --> PipInstall
+        VenvCheck -->|Yes| PipInstall[Install Requirements]
+        PipInstall --> DB_Migrate["Run DB Migrations<br/>(Alembic)"]
     end
     
-    PipInstall --> FEPrep[Step 3: Frontend Prep]
+    DB_Migrate --> FEPrep[Step 3: Frontend Prep]
     
     subgraph FrontendSetup["Frontend Environment Setup"]
-        FEPrep --> NodeModulesCheck{node_modules Exists?}
+        FEPrep --> NodeModulesCheck{node_modules Valid?}
         NodeModulesCheck -->|No| NPMInstall[Run npm install]
         NodeModulesCheck -->|Yes| LaunchPhase[Step 4: Launching Phase]
         NPMInstall --> LaunchPhase
@@ -42,21 +45,21 @@ graph TD
     
     subgraph Launch["Launch & Runtime"]
         LaunchPhase --> Watchdog[Start managed_server.py]
-        Watchdog --> SelfHeal{Self-Heal: Resolve Port 5013?}
-        SelfHeal -->|ConflictFound| KillLocalPG[Taskkill Local Postgres]
-        SelfHeal -->|Safe| Uvicorn["Launch Backend Core<br/>(Port 5012: Admin & 5014: API)"]
+        Watchdog --> SelfHeal{Resolve Port 5013?}
+        SelfHeal -->|Conflict| KillLocalPG[Taskkill Local Postgres]
+        SelfHeal -->|Safe| Uvicorn["Launch Backend Core<br/>(Ports 5012 & 5014)"]
         KillLocalPG --> Uvicorn
-        Uvicorn --> Monitor[Watchdog Monitoring .py/.env]
-        LaunchPhase --> LaunchFE["Start Frontend<br/>(Port 3000: Next.js)"]
+        Uvicorn --> Monitor[Watchdog Monitoring]
+        LaunchPhase --> LaunchFE["Start Frontend<br/>(Port 3000)"]
     end
     
-    Monitor -->|Change Detected| Uvicorn
+    Monitor -->|Change| Uvicorn
     LaunchFE --> Success([SYSTEM ONLINE])
     Uvicorn --> Success
 
     %% Applying Classes
     class Start start
-    class Clean,DockerCheck,DepCheck,CheckPython,CheckNode,CheckFiles,LaunchPhase,Watchdog,Uvicorn,LaunchFE,Monitor step
-    class IsDockerRunning,VenvCheck,NodeModulesCheck,SelfHeal decision
+    class Clean,DockerCheck,DepCheck,CheckPython,CheckNode,CheckFiles,LaunchPhase,Watchdog,Uvicorn,LaunchFE,Monitor,DB_Migrate step
+    class IsDockerRunning,VenvCheck,NodeModulesCheck,SelfHeal,EnvCheck decision
     class BackendSetup,FrontendSetup setup
     class Success success

@@ -10,47 +10,49 @@ graph TD
     subgraph Security_Gate ["Security Layer"]
         direction LR
         GW["API Gateway"]
-        MW["Auth Middleware"]
+        MW["Auth & Rate Limit"]
         GW --> MW
     end
     class Security_Gate gateway
 
-    subgraph API_Entry ["API Routes"]
+    subgraph API_Entry ["API Entry Points"]
         direction LR
-        Public["Public (5014)"]
-        Admin["Admin (5012)"]
+        Public["Public API (5014)"]
+        Admin["Admin SSR (5012)"]
     end
     class API_Entry controller
 
-    subgraph Logic_Core ["Core Services"]
-        direction LR
+    subgraph Logic_Core ["Core Business Logic"]
+        direction TB
         Intent["Intent Engine"]
-        AIRouter["LiteLLM"]
+        AIRouter["LiteLLM AI Router"]
         RAG["RAG Pipeline"]
         Credits["Credit Engine"]
+        Logger["Log Service (WS Tailing)"]
     end
     class Logic_Core service
 
-    subgraph Async_Tasks ["Background Jobs"]
+    subgraph Async_Tasks ["Async Workers & Jobs"]
         direction LR
-        Celery["Workers"]
-        Beat["Scheduler"]
+        Celery["Celery Workers"]
+        Beat["Celery Beat"]
+        Migrate["DB Migrations"]
     end
     class Async_Tasks worker
 
-    subgraph Persistence ["Data & Storage"]
+    subgraph Persistence ["Persistence & Cache"]
         direction LR
-        PG[("Postgres")]
-        Redis[("Redis")]
-        MinIO[("MinIO")]
+        PG[("Postgres (pgvector)")]
+        Redis[("Redis (Cache)")]
+        MinIO[("MinIO (Object Store)")]
     end
     class Persistence db
 
-    subgraph Cloud_API ["External APIs"]
+    subgraph Cloud_API ["External Services"]
         direction LR
-        LLM["AI Models"]
-        Pay["Stripe/RZP"]
-        Mail["Resend"]
+        LLM["AI Providers"]
+        Pay["Stripe/Razorpay"]
+        Mail["Resend/SMTP"]
     end
     class Cloud_API external
 
@@ -61,14 +63,16 @@ graph TD
     Logic_Core --> Persistence
     Logic_Core --> Cloud_API
     
-    Logic_Core --> Async_Tasks
-    Async_Tasks --> Persistence
-
-    %% Specific Logic Flows
+    Logic_Core --> Celery
+    Celery --> Persistence
+    Beat --> Redis
+    Migrate --> PG
+    
+    %% Specific Data Flows
+    Logger <--> MinIO
     Intent <--> Redis
     AIRouter <--> LLM
     Credits <--> Pay
-    RAG <--> PG
     
     %% Spacing Styles
     style Security_Gate padding:15px
