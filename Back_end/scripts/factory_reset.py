@@ -1,16 +1,15 @@
 import sys
 import os
 
-# Add the current directory to sys.path to allow imports
-sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+# Add the parent directory to sys.path to allow imports of the 'app' module
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from sqlalchemy.orm import Session
 from app.db.session import engine, SessionLocal
 from app.models.all_models import Base, User
-from seed_plans import seed_plans
 
 def reset_database():
-    print("--- Database Reset Utility ---")
+    print("--- Database Factory Reset Utility ---")
     
     admin_backups = []
     
@@ -32,7 +31,7 @@ def reset_database():
     except Exception as e:
         print(f"      - Note: Table not found or access error (clean start): {e}")
     finally:
-        db.close() # CRITICAL: Close session before dropping tables
+        db.close() 
 
     try:
         # 2. Drop all tables
@@ -43,28 +42,32 @@ def reset_database():
         print("[3/5] Recreating table structures...")
         Base.metadata.create_all(bind=engine)
         
-        # 4. Seed plans
-        print("[4/5] Re-seeding canonical plans...")
-        seed_plans()
+        # 4. Restore Factory Defaults (Plans, Providers, Models, etc.)
+        print("[4/5] Restoring infrastructure defaults (Plans, Providers, Models)...")
+        from scripts.seed_defaults import seed_infrastructure
+        seed_infrastructure()
         
-        # 5. Restore or Seed Admin
+        # 5. Restore Custom Admin Accounts (if any were modified)
         if admin_backups:
-            print("[5/5] Restoring ADMIN accounts...")
+            print("[5/5] Restoring preserved ADMIN accounts...")
             db = SessionLocal()
             try:
                 for data in admin_backups:
-                    new_admin = User(**data)
-                    db.add(new_admin)
+                    existing = db.query(User).filter(User.email == data["email"]).first()
+                    if existing:
+                        for key, value in data.items():
+                            setattr(existing, key, value)
+                    else:
+                        new_admin = User(**data)
+                        db.add(new_admin)
                 db.commit()
                 print(f"      - Restored {len(admin_backups)} admin(s).")
             finally:
                 db.close()
         else:
-            print("[5/5] No admins to restore. Seeding default admin...")
-            from seed_admin import seed_admin
-            seed_admin()
+            print("[5/5] No previous admins to restore (fresh start).")
 
-        print("\n[SUCCESS] Database is now fresh. Admin access is ready.")
+        print("\n[SUCCESS] Database has been reset to Factory Defaults.")
     
     except Exception as e:
         print(f"\n[ERROR] Reset failed: {e}")

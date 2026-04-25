@@ -30,7 +30,7 @@ if not exist "%VENV_PY%" (
 
 echo [PROCESS] Running reset script...
 cd /d "%BACKEND_DIR%"
-"%VENV_PY%" reset_db.py
+"%VENV_PY%" scripts\factory_reset.py
 
 if %ERRORLEVEL% neq 0 (
     echo.
