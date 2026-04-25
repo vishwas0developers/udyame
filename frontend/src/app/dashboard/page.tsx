@@ -32,6 +32,7 @@ export default function DashboardPage() {
   const searchParams = useSearchParams();
   const fetchAttempted = useRef(false);
 
+  // Effect 1: Handle initial authentication and token fetching
   useEffect(() => {
     if (fetchAttempted.current) return;
 
@@ -50,35 +51,40 @@ export default function DashboardPage() {
           setAuth(response.data, authToken);
           if (token) {
             router.replace("/dashboard");
-            toast.success("Welcome to Udyame Architect!");
+            toast.success("Welcome back!");
           }
         })
         .catch((error) => {
-          console.error("Failed to fetch user:", error);
+          console.error("Auth initialization failed:", error);
           logout();
           router.replace("/");
         });
-      return;
     }
+  }, [searchParams, user, setAuth, logout, router]);
 
-    if (!user) {
+  // Effect 2: Handle authorization redirects (The Access Guard)
+  useEffect(() => {
+    // Only redirect if we are NOT in the middle of a URL token fetch
+    const hasTokenInUrl = searchParams.get("token");
+    if (hasTokenInUrl) return;
+
+    if (user) {
+      if (!user.plan_id) {
+        router.replace("/plans");
+      } else if (user.subscription_plan && !user.subscription_plan.is_active) {
+        router.replace("/plans");
+      }
+    } else if (!localStorage.getItem("auth_token")) {
+      // If no user and no token in storage, go home
       router.replace("/");
-    } else if (!user.plan_id) {
-      // Use replace to avoid back-button loop
-      router.replace("/plans");
-    } else if (user.subscription_plan && !user.subscription_plan.is_active) {
-      // User has a plan but it's not active (e.g. expired)
-      router.replace("/plans");
     }
-    // If user exists with an active plan, do nothing — the dashboard renders below.
-  }, [user, router, searchParams, setAuth, logout]);
+  }, [user, router, searchParams]);
 
-  // Derive loading from the user object — robust guard
-  const hasLoadedUser = !!user;
-  const hasPlan = !!user?.plan_id;
-  const isPlanActive = !!user?.subscription_plan?.is_active;
+  // Derive loading state — robust guard
+  const isInitializing = !user || (user && user.plan_id && !user.subscription_plan);
+  const isAuthorized = user && user.plan_id && user.subscription_plan?.is_active;
 
-  if (!hasLoadedUser || !hasPlan || !isPlanActive) {
+  if (isInitializing || !isAuthorized) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#05070a]">
         <div className="flex flex-col items-center gap-6">
@@ -88,6 +94,16 @@ export default function DashboardPage() {
             className="w-12 h-12 border-4 border-blue-500/20 border-b-blue-500 rounded-full"
           />
           <p className="text-zinc-500 font-mono tracking-widest text-xs uppercase">Initializing System...</p>
+          
+          {/* Fallback timeout message */}
+          <motion.p 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 5 }}
+            className="text-zinc-700 text-[10px] uppercase tracking-tighter"
+          >
+            Verifying secure credentials...
+          </motion.p>
         </div>
       </div>
     );
