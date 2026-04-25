@@ -22,8 +22,8 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
         if not request.url.path.startswith("/api/v1") or request.url.path.endswith("/health"):
             return await call_next(request)
 
-        # Skip rate limiting entirely if Redis isn't connected
-        if not redis_client.redis:
+        # Skip rate limiting entirely if Redis isn't connected or we've already warned it's down
+        if not redis_client.redis or _redis_warned:
             return await call_next(request)
 
         client_ip = request.client.host
@@ -34,7 +34,7 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
         WINDOW = 60 # seconds (1 minute)
 
         try:
-            # Quick health check: if pinging fails, skip rate limiting
+            # Quick health check
             await redis_client.redis.ping()
 
             now = time.time()

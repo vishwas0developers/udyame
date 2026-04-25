@@ -54,26 +54,9 @@ def get_application() -> FastAPI:
         os.makedirs(static_dir)
     _app.mount("/static", StaticFiles(directory=static_dir), name="static")
 
-    _app.add_middleware(
-        CORSMiddleware,
-        allow_origins=[
-            "http://localhost:3000",
-            "http://127.0.0.1:3000",
-            settings.FRONTEND_URL
-        ],
-        allow_credentials=True,
-        allow_methods=["*"],
-        allow_headers=["*"],
-    )
-
+    # 1. API and Admin Routers
     from app.routers import auth, planning, credits, billing, admin_panel, companies
-    from app.core.rate_limiter import RateLimitMiddleware
-
-    _app.add_middleware(RateLimitMiddleware)
-
     app_mode = os.getenv("APP_MODE", "BOTH").upper()
-    
-    # API Routers
     if app_mode in ["API", "BOTH"]:
         _app.include_router(auth.router, prefix=f"{settings.API_V1_STR}/auth", tags=["Authentication"])
         _app.include_router(planning.router, prefix=f"{settings.API_V1_STR}/planning", tags=["Planning"])
@@ -81,9 +64,26 @@ def get_application() -> FastAPI:
         _app.include_router(billing.router, prefix=f"{settings.API_V1_STR}/plans", tags=["Billing"])
         _app.include_router(companies.router, prefix=f"{settings.API_V1_STR}/companies", tags=["Companies"])
     
-    # Admin Routers
     if app_mode in ["ADMIN", "BOTH"]:
         _app.include_router(admin_panel.router, prefix="", tags=["Admin Panel"])
+
+    # 2. Rate Limiting (Inner)
+    from app.core.rate_limiter import RateLimitMiddleware
+    _app.add_middleware(RateLimitMiddleware)
+
+    # 3. CORS (Outer - Must be last to catch all responses)
+    _app.add_middleware(
+        CORSMiddleware,
+        allow_origins=[
+            "http://localhost:3000",
+            "http://127.0.0.1:3000",
+            "http://0.0.0.0:3000",
+            settings.FRONTEND_URL
+        ],
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
 
 
     @_app.get("/health")

@@ -117,7 +117,7 @@ class RestartHandler(FileSystemEventHandler):
             cmd = [
                 sys.executable, "-m", "uvicorn", 
                 self.app_module, 
-                "--host", "0.0.0.0", 
+                "--host", "127.0.0.1", 
                 "--port", svc["port"]
             ]
             
