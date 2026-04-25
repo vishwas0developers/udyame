@@ -23,7 +23,8 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
             return await call_next(request)
 
         # Skip rate limiting entirely if Redis isn't connected or we've already warned it's down
-        if not redis_client.redis or _redis_warned:
+        client = await redis_client.get_redis()
+        if not client or _redis_warned:
             return await call_next(request)
 
         client_ip = request.client.host
@@ -35,12 +36,12 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
 
         try:
             # Quick health check
-            await redis_client.redis.ping()
+            await client.ping()
 
             now = time.time()
             
             # Using Redis pipeline for atomicity and performance
-            pipe = redis_client.redis.pipeline()
+            pipe = client.pipeline()
             # 1. Remove expired timestamps
             pipe.zremrangebyscore(key, 0, now - WINDOW)
             # 2. Count remaining timestamps in the window
