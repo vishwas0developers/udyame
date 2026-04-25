@@ -89,9 +89,40 @@ class CreditService:
         return total_cost.quantize(Decimal("0.0001"))
 
     @staticmethod
-    def get_history(db: Session, user_id: UUID, limit: int = 50) -> List[CreditLedger]:
-        return db.query(CreditLedger).filter(
-            CreditLedger.user_id == user_id
-        ).order_by(CreditLedger.created_at.desc()).limit(limit).all()
+    def auto_refresh_credits(db: Session):
+        """
+        Scheduled task to refresh credits based on billing cycle.
+        Called by Celery Beat.
+        """
+        from datetime import datetime, timedelta
+        from app.models.all_models import User
+        
+        # Fetch users whose last refresh was > 30 days ago and have an active plan
+        cutoff = datetime.utcnow() - timedelta(days=30)
+        users = db.query(User).filter(
+            User.last_credit_refresh <= cutoff,
+            User.plan_id.isnot(None)
+        ).all()
+        
+        for user in users:
+            plan = user.subscription_plan
+            if not plan: continue
+            
+            # Reset balance to plan default
+            old_balance = user.credit_balance
+            user.credit_balance = Decimal(plan.credits_included)
+            user.last_credit_refresh = datetime.utcnow()
+            
+            # Log to ledger
+            ledger_entry = CreditLedger(
+                user_id=user.id,
+                transaction_type="PLAN_REFRESH",
+                amount=user.credit_balance - old_balance,
+                balance_after=user.credit_balance,
+                reference_id=f"refresh_{datetime.utcnow().strftime('%Y%m%d')}"
+            )
+            db.add(ledger_entry)
+            
+        db.commit()
 
 credit_service = CreditService()

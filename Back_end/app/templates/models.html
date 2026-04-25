@@ -18,6 +18,21 @@
 
     <!-- Models Tab -->
     <div id="section-models" class="space-y-6">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+            <div class="bg-slate-800 p-6 rounded-2xl border border-slate-700">
+                <h3 class="text-white font-bold mb-4">Model Reliability (%)</h3>
+                <div class="h-48">
+                    <canvas id="reliabilityChart"></canvas>
+                </div>
+            </div>
+            <div class="bg-slate-800 p-6 rounded-2xl border border-slate-700">
+                <h3 class="text-white font-bold mb-4">Average Latency (ms)</h3>
+                <div class="h-48">
+                    <canvas id="latencyChart"></canvas>
+                </div>
+            </div>
+        </div>
+
         <div class="flex justify-between items-center">
             <div>
                 <h2 class="text-xl font-bold text-white">Model Inventory</h2>
@@ -75,7 +90,7 @@
                                 {% if model.is_default %}<span class="ml-2 px-2 py-0.5 bg-amber-500/10 text-amber-500 rounded text-[10px] font-bold">DEFAULT</span>{% endif %}
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                <button onclick='openEditModelModal("{{ model|tojson }}")' class="text-indigo-400 hover:text-indigo-300 bg-indigo-500/5 p-2 rounded-lg mr-2 transition"><i class="fas fa-edit"></i></button>
+                                <button data-model='{{ model.to_dict()|tojson }}' onclick='openEditModelModal(this)' class="text-indigo-400 hover:text-indigo-300 bg-indigo-500/5 p-2 rounded-lg mr-2 transition"><i class="fas fa-edit"></i></button>
                                 <button onclick="deleteModel('{{ model.id }}')" class="text-red-400 hover:text-red-300 bg-red-500/5 p-2 rounded-lg transition"><i class="fas fa-trash-alt"></i></button>
                             </td>
                         </tr>
@@ -106,7 +121,7 @@
                         <i class="fas fa-server text-xl"></i>
                     </div>
                     <div class="flex gap-2">
-                        <button onclick='openEditProviderModal("{{ provider|tojson }}")' class="text-slate-500 hover:text-indigo-400 p-1 transition"><i class="fas fa-edit"></i></button>
+                        <button data-provider='{{ provider.to_dict()|tojson }}' onclick='openEditProviderModal(this)' class="text-slate-500 hover:text-indigo-400 p-1 transition"><i class="fas fa-edit"></i></button>
                         <button onclick="deleteProvider('{{ provider.id }}')" class="text-slate-500 hover:text-red-400 p-1 transition"><i class="fas fa-trash-alt"></i></button>
                     </div>
                 </div>
@@ -278,6 +293,58 @@
         ]
     };
 
+    document.addEventListener('DOMContentLoaded', async function() {
+        const res = await fetch('/api/admin/analytics/models');
+        const data = await res.json();
+        
+        new Chart(document.getElementById('reliabilityChart'), {
+            type: 'bar',
+            data: {
+                labels: data.map(d => d.name),
+                datasets: [{
+                    label: 'Success Rate',
+                    data: data.map(d => d.success),
+                    backgroundColor: data.map(d => d.success > 95 ? '#10b981' : d.success > 90 ? '#3b82f6' : '#f59e0b'),
+                    borderRadius: 8
+                }]
+            },
+            options: {
+                indexAxis: 'y',
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    x: { min: 80, max: 100, grid: { color: '#334155' }, ticks: { color: '#94a3b8' } },
+                    y: { grid: { display: false }, ticks: { color: '#94a3b8' } }
+                }
+            }
+        });
+
+        new Chart(document.getElementById('latencyChart'), {
+            type: 'line',
+            data: {
+                labels: data.map(d => d.name),
+                datasets: [{
+                    label: 'Avg Latency',
+                    data: data.map(d => d.latency),
+                    borderColor: '#6366f1',
+                    backgroundColor: 'rgba(99, 102, 241, 0.1)',
+                    fill: true,
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: { grid: { color: '#334155' }, ticks: { color: '#94a3b8' } },
+                    x: { grid: { display: false }, ticks: { color: '#94a3b8' } }
+                }
+            }
+        });
+    });
+
     function switchTab(tab) {
         document.getElementById('section-models').classList.toggle('hidden', tab !== 'models');
         document.getElementById('section-providers').classList.toggle('hidden', tab !== 'providers');
@@ -317,7 +384,9 @@
         document.getElementById('providerModal').classList.remove('hidden');
         updateUrlPreset();
     }
-    function openEditProviderModal(p) {
+    function openEditProviderModal(btn) {
+        const p = JSON.parse(btn.getAttribute('data-provider'));
+        
         document.getElementById('providerModalTitle').innerText = 'Edit AI Provider';
         document.getElementById('p_name').value = p.name;
         document.getElementById('p_type').value = p.provider_type;
@@ -359,7 +428,9 @@
         document.getElementById('m_edit_id').value = '';
         document.getElementById('modelModal').classList.remove('hidden');
     }
-    function openEditModelModal(m) {
+    function openEditModelModal(btn) {
+        const m = JSON.parse(btn.getAttribute('data-model'));
+
         document.getElementById('modelModalTitle').innerText = 'Edit AI Model';
         document.getElementById('m_edit_id').value = m.id;
         document.getElementById('m_name').value = m.name;

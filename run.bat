@@ -203,6 +203,9 @@ pushd "%BACKEND_DIR%"
     echo [INFO] Installing/Updating backend requirements...
     "!VENV_PY!" -m pip install --upgrade pip || ( echo [ERROR] pip upgrade failed & popd & pause & exit /b 1 )
     "!VENV_PY!" -m pip install -r requirements.txt || ( echo [ERROR] pip install failed & popd & pause & exit /b 1 )
+    
+    echo [INFO] Running database migrations...
+    venv\Scripts\alembic.exe upgrade head || ( echo [ERROR] Database migration failed & popd & pause & exit /b 1 )
 popd
 echo [SUCCESS] Backend prepped.
 echo.

@@ -2,10 +2,22 @@
 
 import React, { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { motion, AnimatePresence } from "framer-motion";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Zap, Check, Loader2, ArrowLeft, CreditCard } from "lucide-react";
+import { 
+  Zap, 
+  Check, 
+  Loader2, 
+  ArrowLeft, 
+  CreditCard, 
+  ShieldCheck, 
+  Globe, 
+  Lock,
+  CheckCircle2,
+  AlertCircle
+} from "lucide-react";
 import { useAuthStore } from "@/store/useAuthStore";
 import apiClient from "@/lib/api-client";
 import { toast } from "sonner";
@@ -26,11 +38,12 @@ export default function BillingPage() {
   const { setAuth } = useAuthStore();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const planId = searchParams.get("token") || searchParams.get("planId");
+  const planId = searchParams.get("planId");
   
   const [plan, setPlan] = useState<Plan | null>(null);
   const [loading, setLoading] = useState(true);
   const [processing, setProcessing] = useState(false);
+  const [gateway, setGateway] = useState<"razorpay" | "stripe">("stripe");
 
   useEffect(() => {
     if (!planId) {
@@ -62,10 +75,10 @@ export default function BillingPage() {
     if (!plan) return;
     setProcessing(true);
     try {
+      // Mocking gateway selection logic
       await apiClient.post(`/plans/me/plan/${plan.id}`);
-      toast.success(`Successfully subscribed to ${plan.name}!`);
+      toast.success(`Welcome to the ${plan.name} Tier!`);
       
-      // Refresh user data
       const userRes = await apiClient.get("/auth/me");
       const token = localStorage.getItem("auth_token") || "";
       setAuth(userRes.data, token);
@@ -73,7 +86,7 @@ export default function BillingPage() {
       router.push("/dashboard");
     } catch (error) {
       console.error("Purchase failed:", error);
-      toast.error("Failed to complete purchase. Please try again.");
+      toast.error("Checkout failed. Please try again.");
     } finally {
       setProcessing(false);
     }
@@ -81,10 +94,14 @@ export default function BillingPage() {
 
   if (loading || !plan) {
     return (
-      <div className="flex flex-col min-h-screen bg-zinc-50">
+      <div className="flex flex-col min-h-screen bg-[#05070a]">
         <Navbar />
         <div className="flex-grow flex items-center justify-center">
-          <Loader2 className="w-10 h-10 animate-spin text-indigo-600" />
+          <motion.div 
+            animate={{ rotate: 360 }}
+            transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+            className="w-12 h-12 border-4 border-blue-500/20 border-b-blue-500 rounded-full"
+          />
         </div>
         <Footer />
       </div>
@@ -92,114 +109,163 @@ export default function BillingPage() {
   }
 
   return (
-    <div className="flex flex-col min-h-screen bg-zinc-50">
+    <div className="flex flex-col min-h-screen bg-[#05070a] text-white selection:bg-blue-500/30">
       <Navbar />
       
-      <main className="flex-grow py-24 px-4">
-        <div className="container mx-auto max-w-4xl">
-          <Button 
-            variant="ghost" 
+      <main className="flex-grow pt-32 pb-24 px-6">
+        <div className="max-w-6xl mx-auto">
+          <motion.button 
+            initial={{ opacity: 0, x: -10 }}
+            animate={{ opacity: 1, x: 0 }}
             onClick={() => router.push("/plans")}
-            className="mb-8 hover:bg-white"
+            className="group flex items-center gap-2 text-zinc-500 hover:text-white transition-colors mb-12 font-bold tracking-widest text-xs uppercase"
           >
-            <ArrowLeft className="w-4 h-4 mr-2" /> Back to Plans
-          </Button>
+            <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" /> 
+            Back to Tiers
+          </motion.button>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
-            {/* Order Summary */}
-            <div className="space-y-6">
-              <h2 className="text-3xl font-bold text-slate-900">Order Summary</h2>
-              <Card className="border-slate-200 shadow-sm overflow-hidden">
-                <CardHeader className="bg-slate-50 border-b border-slate-100">
-                  <div className="flex justify-between items-center">
-                    <CardTitle className="text-xl">{plan.name}</CardTitle>
-                    {plan.is_recommended && <Badge className="bg-indigo-600">Best Value</Badge>}
-                  </div>
-                </CardHeader>
-                <CardContent className="pt-6 space-y-4">
-                  <div className="flex justify-between text-lg font-medium">
-                    <span className="text-slate-500">Monthly Subscription</span>
-                    <span className="text-slate-900 font-bold">₹{plan.price}</span>
-                  </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-slate-500">Credits Included</span>
-                    <span className="text-indigo-600 font-bold">+{plan.credits_included} Units</span>
-                  </div>
-                  <div className="pt-4 border-t border-dashed border-slate-200">
-                    <div className="flex justify-between text-2xl font-black">
-                      <span>Total Due</span>
-                      <span className="text-indigo-600">₹{plan.price}</span>
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 items-start">
+            {/* Order Summary (Col 7) */}
+            <div className="lg:col-span-7 space-y-10">
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+              >
+                <h2 className="text-4xl font-black tracking-tight mb-8">CONFIRM YOUR ARCHITECTURE</h2>
+                
+                <Card className="bg-white/5 border-white/10 text-white rounded-[2.5rem] overflow-hidden backdrop-blur-xl">
+                  <CardHeader className="p-10 pb-6 border-b border-white/5">
+                    <div className="flex justify-between items-start">
+                      <div>
+                         <Badge className="bg-blue-500/10 text-blue-400 border-blue-500/20 py-1 font-black mb-3">SELECTED TIER</Badge>
+                         <CardTitle className="text-4xl font-black italic tracking-tighter">{plan.name.toUpperCase()}</CardTitle>
+                      </div>
+                      <div className="text-right">
+                         <span className="text-zinc-500 text-[10px] font-bold uppercase tracking-[0.2em] block mb-1">TOTAL DUE</span>
+                         <span className="text-4xl font-black text-blue-500 tracking-tighter italic">₹{plan.price}</span>
+                      </div>
                     </div>
-                    <p className="text-xs text-slate-400 mt-2 italic text-right">Taxes included where applicable</p>
-                  </div>
-                </CardContent>
-              </Card>
+                  </CardHeader>
+                  <CardContent className="p-10 space-y-8">
+                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div>
+                           <h4 className="text-xs font-black text-zinc-500 uppercase tracking-widest mb-4">Core Benefits</h4>
+                           <ul className="space-y-4">
+                              {plan.features.slice(0, 4).map((f, i) => (
+                                <li key={i} className="flex items-center gap-3 text-sm text-zinc-300">
+                                   <CheckCircle2 className="w-5 h-5 text-blue-500 flex-shrink-0" />
+                                   {f}
+                                </li>
+                              ))}
+                           </ul>
+                        </div>
+                        <div className="bg-white/[0.03] rounded-3xl p-6 border border-white/5">
+                           <Zap className="w-8 h-8 text-blue-500 mb-4" />
+                           <h4 className="font-bold mb-2">Resource Allocation</h4>
+                           <p className="text-sm text-zinc-500 leading-relaxed">
+                              You will receive {plan.credits_included} Design Units instantly upon successful checkout. These units power our deep-discovery AI engine.
+                           </p>
+                        </div>
+                     </div>
+                  </CardContent>
+                </Card>
+              </motion.div>
 
-              <div className="p-6 bg-white rounded-2xl border border-slate-200">
-                <h3 className="font-bold text-slate-900 mb-4 flex items-center gap-2">
-                  <Check className="w-5 h-5 text-emerald-500" /> What&apos;s Included:
-                </h3>
-                <ul className="space-y-3">
-                  {plan.features.map((feature, index) => (
-                    <li key={index} className="text-sm text-slate-600 flex items-start gap-2">
-                      <div className="w-1.5 h-1.5 rounded-full bg-slate-300 mt-1.5 shrink-0" />
-                      {feature}
-                    </li>
-                  ))}
-                </ul>
+              {/* Trust Section */}
+              <div className="grid grid-cols-3 gap-6 opacity-30 grayscale group-hover:opacity-100 transition-opacity">
+                 <div className="flex flex-col items-center gap-2">
+                    <ShieldCheck className="w-10 h-10" />
+                    <span className="text-[10px] font-bold tracking-widest uppercase">SSL Secure</span>
+                 </div>
+                 <div className="flex flex-col items-center gap-2">
+                    <Lock className="w-10 h-10" />
+                    <span className="text-[10px] font-bold tracking-widest uppercase">PCI Compliant</span>
+                 </div>
+                 <div className="flex flex-col items-center gap-2">
+                    <Globe className="w-10 h-10" />
+                    <span className="text-[10px] font-bold tracking-widest uppercase">Global Access</span>
+                 </div>
               </div>
             </div>
 
-            {/* Payment & Checkout */}
-            <div className="space-y-6">
-              <h2 className="text-3xl font-bold text-slate-900">Checkout</h2>
-              <Card className="border-indigo-100 shadow-xl shadow-indigo-100/50">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2 text-indigo-600">
-                    <CreditCard className="w-5 h-5" /> Payment Details
-                  </CardTitle>
-                  <CardDescription>Securely complete your subscription</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 border-dashed text-center">
-                    <p className="text-slate-500 text-sm italic">
-                      Payment gateway integration (Stripe/Razorpay) would appear here.
-                    </p>
-                  </div>
-                  
-                  <div className="space-y-4">
-                    <div className="flex items-center gap-2">
-                      <input type="checkbox" id="terms" className="w-4 h-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500" defaultChecked />
-                      <label htmlFor="terms" className="text-xs text-slate-500 leading-tight">
-                        I agree to the Terms of Service and Privacy Policy. My subscription will renew automatically.
-                      </label>
+            {/* Checkout Form (Col 5) */}
+            <div className="lg:col-span-5">
+              <motion.div
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.2 }}
+              >
+                <Card className="bg-white/5 border-blue-500/30 text-white rounded-[2.5rem] shadow-[0_20px_80px_rgba(37,99,235,0.1)] overflow-hidden">
+                  <CardHeader className="p-10">
+                    <CardTitle className="flex items-center gap-3 text-2xl font-bold">
+                       <CreditCard className="w-6 h-6 text-blue-500" />
+                       SECURE CHECKOUT
+                    </CardTitle>
+                    <CardDescription className="text-zinc-500">Select your preferred payment architecture.</CardDescription>
+                  </CardHeader>
+                  <CardContent className="px-10 pb-10 space-y-8">
+                    {/* Gateway Selection */}
+                    <div className="flex p-1 bg-white/5 rounded-2xl border border-white/10">
+                       <button 
+                         onClick={() => setGateway("stripe")}
+                         className={`flex-1 py-4 rounded-xl font-bold text-sm transition-all ${gateway === 'stripe' ? 'bg-white/10 text-white shadow-xl' : 'text-zinc-500 hover:text-zinc-300'}`}
+                       >
+                         INTERNATIONAL (Stripe)
+                       </button>
+                       <button 
+                         onClick={() => setGateway("razorpay")}
+                         className={`flex-1 py-4 rounded-xl font-bold text-sm transition-all ${gateway === 'razorpay' ? 'bg-white/10 text-white shadow-xl' : 'text-zinc-500 hover:text-zinc-300'}`}
+                       >
+                         INDIA (Razorpay)
+                       </button>
                     </div>
-                  </div>
-                </CardContent>
-                <CardFooter>
-                  <Button 
-                    className="w-full py-8 text-lg font-black bg-indigo-600 hover:bg-indigo-700 shadow-lg shadow-indigo-200"
-                    onClick={handleConfirmPurchase}
-                    disabled={processing}
-                  >
-                    {processing ? (
-                      <>
-                        <Loader2 className="w-5 h-5 animate-spin mr-2" />
-                        Processing...
-                      </>
-                    ) : (
-                      "Confirm & Subscribe"
-                    )}
-                  </Button>
-                </CardFooter>
-              </Card>
 
-              <div className="flex items-center justify-center gap-6 opacity-40 grayscale">
-                {/* Placeholder logos for trust */}
-                <div className="text-xs font-bold tracking-widest text-slate-500 uppercase">Secure Payment</div>
-                <div className="w-12 h-6 bg-slate-200 rounded" />
-                <div className="w-12 h-6 bg-slate-200 rounded" />
-              </div>
+                    <div className="p-8 bg-blue-500/5 rounded-3xl border border-blue-500/10 border-dashed text-center">
+                       <p className="text-blue-400 text-sm font-medium">
+                          You are currently using {gateway === 'stripe' ? 'Stripe Global' : 'Razorpay Secure'} Gateway. 
+                          Check out safely with 256-bit encryption.
+                       </p>
+                    </div>
+
+                    <div className="space-y-4">
+                       <div className="flex gap-3">
+                          <CheckCircle2 className="w-5 h-5 text-emerald-500 flex-shrink-0" />
+                          <span className="text-xs text-zinc-500 leading-relaxed italic">
+                             By confirming, you agree to our Terms of Strategic Partnership. Your subscription will renew automatically every month.
+                          </span>
+                       </div>
+                    </div>
+
+                    <Button 
+                      className="w-full h-20 bg-blue-600 hover:bg-blue-700 text-xl font-black italic rounded-3xl shadow-[0_10px_30px_rgba(37,99,235,0.4)] transition-all hover:scale-[1.02] active:scale-[0.98]"
+                      onClick={handleConfirmPurchase}
+                      disabled={processing}
+                    >
+                      {processing ? (
+                        <div className="flex items-center gap-3">
+                           <Loader2 className="w-6 h-6 animate-spin" />
+                           PROCESSING...
+                        </div>
+                      ) : (
+                        "CONFIRM & ACTIVATE"
+                      )}
+                    </Button>
+
+                    <div className="flex items-center justify-center gap-2 text-zinc-600">
+                       <Lock className="w-3 h-3" />
+                       <span className="text-[10px] font-bold uppercase tracking-widest">Encrypted Checkout</span>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Support Note */}
+                <div className="mt-8 flex items-center gap-4 p-6 bg-white/[0.02] border border-white/5 rounded-3xl">
+                   <AlertCircle className="w-5 h-5 text-zinc-700" />
+                   <p className="text-xs text-zinc-600">
+                      Need help? Contact our architectural support at support@udyame.ai
+                   </p>
+                </div>
+              </motion.div>
             </div>
           </div>
         </div>

@@ -1,16 +1,11 @@
 from celery import Celery
-import os
-from dotenv import load_dotenv
+from app.core.config import settings
 
-load_dotenv()
-
-REDIS_URL = os.getenv("REDIS_URL", "redis://localhost:6379/0")
-
+# Celery instance using centralized settings
 celery_app = Celery(
-    "udyame_worker",
-    broker=REDIS_URL,
-    backend=REDIS_URL,
-    include=["app.services.export_service"]
+    "udyame",
+    broker=f"redis://{settings.REDIS_HOST}:{settings.REDIS_PORT}/0",
+    backend=f"redis://{settings.REDIS_HOST}:{settings.REDIS_PORT}/0"
 )
 
 celery_app.conf.update(
@@ -20,5 +15,16 @@ celery_app.conf.update(
     timezone="UTC",
     enable_utc=True,
     task_track_started=True,
-    task_time_limit=3600, # 1 hour max for doc gen
+    task_time_limit=3600,
 )
+
+# Auto-discover tasks from app.tasks and existing services
+celery_app.autodiscover_tasks(["app.tasks", "app.services"])
+
+# Periodic Task Schedule (Beat)
+celery_app.conf.beat_schedule = {
+    "daily-credit-refresh": {
+        "task": "app.tasks.credit_tasks.refresh_credits_task",
+        "schedule": 86400.0, # Every 24 hours
+    },
+}

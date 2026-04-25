@@ -40,22 +40,68 @@ class GuardRailService:
         return False
 
     @staticmethod
-    def validate_llm_output(output: str) -> str:
+    def calculate_safety_score(text: str) -> Dict[str, Any]:
         """
-        Post-processing for LLM outputs to prevent hallucinations 
-        or leakage of internal prompt logic.
+        Calculates a safety score based on PII density and basic content filtering.
         """
-        # Example: Prevent repeating system prompt instructions
+        pii_matches = {}
+        total_pii = 0
+        for label, pattern in GuardRailService.PATTERNS.items():
+            matches = re.findall(pattern, text)
+            if matches:
+                pii_matches[label] = len(matches)
+                total_pii += len(matches)
+        
+        # Safety score: 1.0 is safe, 0.0 is dangerous
+        score = max(0.0, 1.0 - (total_pii * 0.1))
+        
+        return {
+            "score": score,
+            "pii_detected": total_pii > 0,
+            "pii_breakdown": pii_matches,
+            "status": "PASS" if score > 0.7 else "REVIEW" if score > 0.4 else "BLOCK"
+        }
+
+    @staticmethod
+    def hallucination_check(output: str, context: str) -> bool:
+        """
+        Basic cross-reference check between LLM output and RAG context.
+        Returns False if specific identifiers in output are missing from context.
+        """
+        if not context:
+            return True
+            
+        # Extract potential specific values (IDs, large numbers, emails)
+        output_entities = re.findall(r'\b\d{4,}\b|[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}', output)
+        
+        for entity in output_entities:
+            if entity not in context:
+                return False # Potential hallucinated identifier
+        return True
+
+    @staticmethod
+    def validate_llm_output(output: str, context: str = "") -> Dict[str, Any]:
+        """
+        Comprehensive post-generation check.
+        """
         blacklisted_phrases = [
             "As an AI language model",
             "Under my system instructions",
             "I cannot fulfill this request"
         ]
         
-        cleaned_output = output
+        cleaned = output
         for phrase in blacklisted_phrases:
-            cleaned_output = cleaned_output.replace(phrase, "")
+            cleaned = cleaned.replace(phrase, "[CONTENT REMOVED]")
             
-        return cleaned_output.strip()
+        is_grounded = GuardRailService.hallucination_check(cleaned, context)
+        safety = GuardRailService.calculate_safety_score(cleaned)
+        
+        return {
+            "cleaned_text": cleaned.strip(),
+            "is_grounded": is_grounded,
+            "safety_score": safety["score"],
+            "safety_status": safety["status"]
+        }
 
 guard_rail_service = GuardRailService()

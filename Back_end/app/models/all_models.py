@@ -75,12 +75,23 @@ class InternalPlanning(Base):
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     company_id = Column(UUID(as_uuid=True), ForeignKey("companies.id", ondelete="CASCADE"), unique=True)
     core_data = Column(JSONB, nullable=False)  # Stores questions & answers
-    status = Column(String(20), default="DRAFT")
+    status = Column(String(20), default="DRAFT") # DRAFT, COMPLETED, AMENDING
     completed_at = Column(DateTime, nullable=True)
     version = Column(Integer, default=1)
     created_at = Column(DateTime, default=datetime.utcnow)
 
     company = relationship("Company", back_populates="planning")
+    versions = relationship("PlanningVersion", back_populates="planning", cascade="all, delete-orphan")
+
+class PlanningVersion(Base):
+    __tablename__ = "planning_versions"
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    planning_id = Column(UUID(as_uuid=True), ForeignKey("internal_plannings.id", ondelete="CASCADE"))
+    version_number = Column(Integer, nullable=False)
+    core_data = Column(JSONB, nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    
+    planning = relationship("InternalPlanning", back_populates="versions")
 
 class QuestionBank(Base):
     __tablename__ = "question_bank"
@@ -107,6 +118,16 @@ class AIProvider(Base):
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
     models = relationship("AIModel", back_populates="provider_rel", cascade="all, delete-orphan")
+
+    def to_dict(self):
+        return {
+            "id": str(self.id),
+            "name": self.name,
+            "provider_type": self.provider_type,
+            "api_key": self.api_key,
+            "base_url": self.base_url,
+            "is_active": self.is_active
+        }
 
 class AIModel(Base):
     __tablename__ = "ai_models"
@@ -137,6 +158,26 @@ class AIModel(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
 
     provider_rel = relationship("AIProvider", back_populates="models")
+
+    def to_dict(self):
+        return {
+            "id": str(self.id),
+            "provider_id": str(self.provider_id) if self.provider_id else None,
+            "name": self.name,
+            "provider": self.provider,
+            "model_id": self.model_id,
+            "is_active": self.is_active,
+            "is_default": self.is_default,
+            "supports_vision": self.supports_vision,
+            "vision_details": self.vision_details,
+            "supports_text": self.supports_text,
+            "text_details": self.text_details,
+            "supports_tools": self.supports_tools,
+            "tools_details": self.tools_details,
+            "supports_thinking": self.supports_thinking,
+            "thinking_details": self.thinking_details,
+            "fallback_priority": self.fallback_priority
+        }
 
 class CreditLedger(Base):
     __tablename__ = "credit_ledger"

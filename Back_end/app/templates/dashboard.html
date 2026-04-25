@@ -42,6 +42,83 @@
     </div>
 </div>
 
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-10">
+    <!-- Credit Usage Chart -->
+    <div class="bg-slate-800 p-6 rounded-xl border border-slate-700">
+        <h3 class="text-white font-bold mb-4">Credit Burn Rate (14 Days)</h3>
+        <div class="h-64">
+            <canvas id="creditUsageChart"></canvas>
+        </div>
+    </div>
+
+    <!-- Subscription Distribution Chart -->
+    <div class="bg-slate-800 p-6 rounded-xl border border-slate-700">
+        <h3 class="text-white font-bold mb-4">Subscription Tiers</h3>
+        <div class="h-64">
+            <canvas id="subDistChart"></canvas>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', async function() {
+    try {
+        // Fetch Credit Analytics
+        const creditsRes = await fetch('/api/admin/analytics/credits');
+        const creditsData = await creditsRes.json();
+        
+        new Chart(document.getElementById('creditUsageChart'), {
+            type: 'line',
+            data: {
+                labels: creditsData.map(d => d.date),
+                datasets: [{
+                    label: 'Credits Burned',
+                    data: creditsData.map(d => d.amount),
+                    borderColor: '#6366f1',
+                    backgroundColor: 'rgba(99, 102, 241, 0.1)',
+                    fill: true,
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: { grid: { color: '#334155' }, ticks: { color: '#94a3b8' } },
+                    x: { grid: { display: false }, ticks: { color: '#94a3b8' } }
+                }
+            }
+        });
+
+        // Fetch Subscription Analytics
+        const subRes = await fetch('/api/admin/analytics/subscriptions');
+        const subData = await subRes.json();
+
+        new Chart(document.getElementById('subDistChart'), {
+            type: 'doughnut',
+            data: {
+                labels: subData.map(d => d.tier),
+                datasets: [{
+                    data: subData.map(d => d.count),
+                    backgroundColor: ['#6366f1', '#3b82f6', '#10b981', '#f59e0b'],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'right', labels: { color: '#94a3b8' } }
+                }
+            }
+        });
+    } catch (e) {
+        console.error("Failed to load charts:", e);
+    }
+});
+</script>
+
 <div class="bg-slate-800 rounded-xl border border-slate-700 overflow-hidden">
     <div class="p-6 border-b border-slate-700">
         <h3 class="text-xl font-semibold text-white">Recent Activity</h3>

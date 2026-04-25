@@ -10,6 +10,8 @@ from decimal import Decimal
 from pydantic import BaseModel
 from typing import Optional
 
+from sse_starlette.sse import EventSourceResponse
+
 router = APIRouter()
 
 class ChatInput(BaseModel):
@@ -29,6 +31,9 @@ CORE_QUESTIONS = [
     "What is your estimated initial investment or budget?"
 ]
 
+from app.models.all_models import User, InternalPlanning, Company, PlanningVersion
+from uuid import UUID
+
 @router.post("/chat")
 async def chat_with_architect(
     chat_in: ChatInput,
@@ -36,9 +41,17 @@ async def chat_with_architect(
     current_user: User = Depends(get_current_user)
 ):
     # 1. Fetch or Create Planning State
-    planning = db.query(InternalPlanning).join(Company).filter(Company.user_id == current_user.id).first()
+    if chat_in.company_id:
+        planning = db.query(InternalPlanning).filter(InternalPlanning.company_id == chat_in.company_id).first()
+        # Verify ownership
+        company = db.query(Company).filter(Company.id == chat_in.company_id, Company.user_id == current_user.id).first()
+        if not company:
+            raise HTTPException(status_code=404, detail="Company workspace not found or unauthorized")
+    else:
+        planning = db.query(InternalPlanning).join(Company).filter(Company.user_id == current_user.id).first()
     
     if not planning:
+        # Create a default company if none exists
         new_company = Company(user_id=current_user.id, name="My New Venture")
         db.add(new_company)
         db.commit()
@@ -48,13 +61,17 @@ async def chat_with_architect(
         db.commit()
         db.refresh(planning)
 
+    # Check if plan is locked
+    if planning.status == "COMPLETED":
+        raise HTTPException(status_code=400, detail="Planning is completed and locked. Request an amendment to make changes.")
+
     current_index = planning.core_data.get("index", 0)
     
     # 2. Check and deduct credits for wizard step
     credit_service.deduct_credits(
         db=db,
         user_id=current_user.id,
-        amount=Decimal("0.10"), # Wizard steps are flat rate 0.10
+        amount=Decimal("0.10"), 
         reference_id=f"wizard_step_{current_index}",
         transaction_type="WIZARD_STEP"
     )
@@ -76,20 +93,165 @@ async def chat_with_architect(
             "remaining_credits": float(current_user.credit_balance)
         }
     else:
-        # Core questions finished - Trigger AI for dynamic analysis
-        planning.core_data = {"answers": answers, "index": next_index, "status": "CORE_COMPLETE"}
+        # Core questions finished
+        planning.status = "COMPLETED"
+        planning.core_data = {"answers": answers, "index": next_index}
         db.commit()
         
         context = "\n".join([f"Q: {a['question']} A: {a['answer']}" for a in answers])
         messages = [
-            {"role": "system", "content": "You are Udyame AI. You have just completed the core discovery. Provide a 2-sentence summary of the business and ask if they have any specific concerns."},
+            {"role": "system", "content": "You are Udyame AI. You have just completed the core discovery. Provide a professional summary of the business and explain that the planning is now locked for generation."},
             {"role": "user", "content": f"Here is my business profile:\n{context}"}
         ]
         
-        # ai_service now automatically deducts credits based on token usage
         ai_response = ai_service.generate_response(db, current_user.id, messages, reference_id="core_summary")
         
         return {
             "response": ai_response["content"],
             "remaining_credits": float(current_user.credit_balance)
         }
+
+@router.post("/{company_id}/amend")
+def request_amendment(
+    company_id: UUID,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """
+    Unlocks a completed planning by creating a historical version and moving to AMENDING status.
+    """
+    planning = db.query(InternalPlanning).join(Company).filter(
+        Company.id == company_id, 
+        Company.user_id == current_user.id
+    ).first()
+    
+    if not planning:
+        raise HTTPException(status_code=404, detail="Planning not found")
+        
+    if planning.status != "COMPLETED":
+        return {"message": "Planning is already open for editing.", "status": planning.status}
+
+    # 1. Create a version snapshot
+    version = PlanningVersion(
+        planning_id=planning.id,
+        version_number=planning.version,
+        core_data=planning.core_data
+    )
+    db.add(version)
+    
+    # 2. Update planning
+    planning.status = "AMENDING"
+    planning.version += 1
+    # Reset index to allow re-evaluation if needed, or keep it. 
+    # For now we just unlock.
+    
+    db.commit()
+    return {
+        "message": "Amendment requested. Planning is now unlocked.", 
+        "version": planning.version
+    }
+
+@router.get("/chat/stream")
+async def chat_stream(
+    prompt: str,
+    company_id: Optional[UUID] = None,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """
+    SSE streaming endpoint for AI chat.
+    Includes RAG context if company_id is provided.
+    """
+    from app.services.rag_service import rag_service
+    
+    # 1. Build Context
+    context = ""
+    if company_id:
+        context = await rag_service.get_grounded_context(db, prompt, str(company_id))
+    
+    # 2. Build Messages
+    messages = [
+        {
+            "role": "system", 
+            "content": f"You are Udyame AI, a helpful business consultant. Use the following context to ground your answer if relevant:\n{context}"
+        },
+        {"role": "user", "content": prompt}
+    ]
+    
+    # 3. Return Stream
+    return EventSourceResponse(
+        ai_service.generate_stream(
+            db=db, 
+            user_id=current_user.id, 
+            messages=messages,
+            reference_id=f"chat_stream_{company_id or 'general'}"
+        )
+    )
+
+@router.post("/{company_id}/export")
+def trigger_export(
+    company_id: UUID,
+    format: str = "pdf",
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """
+    Triggers an asynchronous document generation task.
+    Returns a task_id for status polling.
+    """
+    from app.services.export_service import run_export_task
+    
+    planning = db.query(InternalPlanning).filter(
+        InternalPlanning.company_id == company_id
+    ).first()
+    
+    if not planning:
+        raise HTTPException(status_code=404, detail="Planning data not found")
+        
+    # Check ownership
+    if planning.company.user_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Unauthorized")
+
+    # Prepare data for export
+    data = {
+        "company_name": planning.company.name,
+        "industry": planning.company.industry,
+        "answers": planning.core_data.get("answers", [])
+    }
+    
+    # Trigger Celery
+    task = run_export_task.delay(data, format=format)
+    return {"task_id": task.id, "status": "PENDING"}
+
+@router.get("/export/status/{task_id}")
+def get_export_status(
+    task_id: str,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """
+    Polls the status of an export task.
+    Returns a signed download URL upon completion.
+    """
+    from celery.result import AsyncResult
+    from app.core.celery_app import celery_app
+    from app.services.storage_service import storage_service
+    
+    result = AsyncResult(task_id, app=celery_app)
+    
+    if result.ready():
+        res_data = result.result
+        if isinstance(res_data, dict) and res_data.get("status") == "success":
+             # Generate a signed URL for secure download (expires in 1 hour)
+             bucket, key = res_data["storage_path"].split("/", 1)
+             download_url = storage_service.get_presigned_url(bucket, key)
+             
+             return {
+                 "status": "COMPLETED",
+                 "download_url": download_url,
+                 "format": res_data["format"],
+                 "file_name": res_data["file_name"]
+             }
+        return {"status": "FAILED", "error": str(res_data)}
+        
+    return {"status": result.state}

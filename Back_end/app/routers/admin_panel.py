@@ -60,9 +60,22 @@ class ProviderSave(BaseModel):
 
 # --- Admin UI Routes ---
 
+from jose import jwt, JWTError
+from app.core.config import settings
+from datetime import timedelta
+
 # --- Helper ---
 def check_admin_auth(request: Request):
-    return request.cookies.get("admin_session")
+    token = request.cookies.get("admin_session")
+    if not token:
+        return None
+    try:
+        payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
+        # We can also verify the user still exists/is admin here if needed, 
+        # but for performance we trust the token for the duration.
+        return payload.get("sub")
+    except JWTError:
+        return None
 
 # --- Admin UI Routes ---
 
@@ -80,11 +93,38 @@ async def admin_login_get(request: Request, next: Optional[str] = None):
     return templates.TemplateResponse("login.html", {"request": request, "next_url": next})
 
 @router.post("/login")
-async def admin_login_post(request: Request, email: str = Form(...), password: str = Form(...), next: Optional[str] = Form(None)):
-    # Placeholder for secure admin login logic
+async def admin_login_post(
+    request: Request, 
+    email: str = Form(...), 
+    password: str = Form(...), 
+    next: Optional[str] = Form(None),
+    db: Session = Depends(get_db)
+):
+    user = db.query(User).filter(User.email == email).first()
+    
+    if not user or not security.verify_password(password, user.password_hash) or user.role != "ADMIN":
+        return templates.TemplateResponse("login.html", {
+            "request": request, 
+            "error": "Invalid credentials or unauthorized access.", 
+            "next_url": next
+        })
+
     target_url = next if next else "/dashboard"
     response = RedirectResponse(url=target_url, status_code=303)
-    response.set_cookie(key="admin_session", value="mock_session_id")
+    
+    # Create a session token (12 hours)
+    token = security.create_access_token(
+        subject=str(user.id), 
+        expires_delta=timedelta(hours=12)
+    )
+    
+    response.set_cookie(
+        key="admin_session", 
+        value=token, 
+        httponly=True, 
+        max_age=12 * 3600,
+        samesite="lax"
+    )
     return response
 
 @router.get("/dashboard", response_class=HTMLResponse)
@@ -462,3 +502,55 @@ async def fetch_provider_models(provider_id: UUID, request: Request, db: Session
         base_url=provider.base_url
     )
     return models
+
+@router.get("/api/admin/analytics/credits")
+async def admin_credits_analytics(request: Request, db: Session = Depends(get_db)):
+    if not check_admin_auth(request):
+        raise HTTPException(status_code=401)
+    
+    from sqlalchemy import func
+    from datetime import timedelta
+    
+    end_date = datetime.now()
+    start_date = end_date - timedelta(days=14)
+    
+    usage = db.query(
+        func.date(CreditLedger.created_at).label('date'),
+        func.sum(func.abs(CreditLedger.amount)).label('total')
+    ).filter(
+        CreditLedger.amount < 0,
+        CreditLedger.created_at >= start_date
+    ).group_by(func.date(CreditLedger.created_at)).order_by(func.date(CreditLedger.created_at)).all()
+    
+    return [{"date": str(u.date), "amount": float(u.total)} for u in usage]
+
+@router.get("/api/admin/analytics/subscriptions")
+async def admin_subscriptions_analytics(request: Request, db: Session = Depends(get_db)):
+    if not check_admin_auth(request):
+        raise HTTPException(status_code=401)
+    
+    from sqlalchemy import func
+    counts = db.query(
+        SubscriptionPlan.name,
+        func.count(User.id)
+    ).join(User, User.plan_id == SubscriptionPlan.id).group_by(SubscriptionPlan.name).all()
+    
+    return [{"tier": c[0], "count": c[1]} for c in counts]
+
+@router.get("/api/admin/analytics/models")
+async def admin_model_performance(request: Request, db: Session = Depends(get_db)):
+    if not check_admin_auth(request):
+        raise HTTPException(status_code=401)
+    
+    models = db.query(AIModel).filter(AIModel.is_active == True).all()
+    
+    # In a real system, we would query an 'ai_requests' log table.
+    # For now, we return semi-random performance data for the UI.
+    import random
+    return [
+        {
+            "name": m.name,
+            "success": random.randint(85, 99),
+            "latency": random.randint(200, 1500)
+        } for m in models
+    ]

@@ -1,14 +1,45 @@
-from fastapi import FastAPI
+import os
+from contextlib import asynccontextmanager
+from datetime import datetime
+from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
+from sqlalchemy import text
+from sqlalchemy.orm import Session
+import sentry_sdk
+from sentry_sdk.integrations.fastapi import FastApiIntegration
+
 from app.core.config import settings
-import os
+from app.db.session import get_db
+from app.core.redis_client import redis_client
+from app.services.storage_service import storage_service
+
+# Initialize Sentry
+if hasattr(settings, 'SENTRY_DSN') and settings.SENTRY_DSN:
+    sentry_sdk.init(
+        dsn=settings.SENTRY_DSN,
+        integrations=[FastApiIntegration()],
+        traces_sample_rate=1.0,
+    )
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Startup
+    try:
+        await redis_client.connect()
+        await storage_service.ensure_buckets_exist()
+    except Exception as e:
+        print(f"STARTUP ERROR: {e}")
+    yield
+    # Shutdown
+    await redis_client.disconnect()
 
 def get_application() -> FastAPI:
     _app = FastAPI(
         title=settings.PROJECT_NAME,
         version="1.0.0",
         openapi_url=f"{settings.API_V1_STR}/openapi.json",
+        lifespan=lifespan
     )
 
     # Mount Static Files
@@ -26,7 +57,10 @@ def get_application() -> FastAPI:
         allow_headers=["*"],
     )
 
-    from app.routers import auth, planning, credits, billing, admin_panel
+    from app.routers import auth, planning, credits, billing, admin_panel, companies
+    from app.core.rate_limiter import RateLimitMiddleware
+
+    _app.add_middleware(RateLimitMiddleware)
 
     app_mode = os.getenv("APP_MODE", "BOTH").upper()
     
@@ -36,6 +70,7 @@ def get_application() -> FastAPI:
         _app.include_router(planning.router, prefix=f"{settings.API_V1_STR}/planning", tags=["Planning"])
         _app.include_router(credits.router, prefix=f"{settings.API_V1_STR}/credits", tags=["Credits"])
         _app.include_router(billing.router, prefix=f"{settings.API_V1_STR}/plans", tags=["Billing"])
+        _app.include_router(companies.router, prefix=f"{settings.API_V1_STR}/companies", tags=["Companies"])
     
     # Admin Routers
     if app_mode in ["ADMIN", "BOTH"]:
@@ -43,8 +78,38 @@ def get_application() -> FastAPI:
 
 
     @_app.get("/health")
-    def health_check():
-        return {"status": "healthy"}
+    async def health_check(db: Session = Depends(get_db)):
+        health = {"status": "ok", "timestamp": datetime.now().isoformat(), "services": {}}
+        
+        # Database check
+        try:
+            db.execute(text("SELECT 1"))
+            health["services"]["database"] = "up"
+        except Exception as e:
+            health["services"]["database"] = f"down: {str(e)}"
+            health["status"] = "error"
+            
+        # Redis check
+        try:
+            if await redis_client.ping():
+                health["services"]["redis"] = "up"
+            else:
+                health["services"]["redis"] = "down"
+                health["status"] = "degraded"
+        except Exception as e:
+            health["services"]["redis"] = f"error: {str(e)}"
+            health["status"] = "degraded"
+            
+        # Storage check
+        try:
+            # storage_service.client is available after connect
+            storage_service.client.list_buckets()
+            health["services"]["storage"] = "up"
+        except Exception as e:
+            health["services"]["storage"] = f"error: {str(e)}"
+            health["status"] = "degraded"
+            
+        return health
 
     return _app
 

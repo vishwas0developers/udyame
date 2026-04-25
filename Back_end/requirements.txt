@@ -19,3 +19,13 @@ email-validator==2.1.1
 celery==5.3.6
 python-docx==1.1.0
 websockets==12.0
+sentence-transformers==2.5.1
+sse-starlette==2.0.0
+weasyprint==61.2
+openpyxl==3.1.2
+razorpay==1.4.1
+stripe==8.5.0
+sentry-sdk[fastapi]==1.40.6
+prometheus-fastapi-instrumentator==6.1.0
+docxtpl==0.16.8
+boto3==1.34.0
