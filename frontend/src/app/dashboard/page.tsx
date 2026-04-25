@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
@@ -22,64 +22,55 @@ import {
   ArrowRight,
   TrendingUp,
   History,
-  LayoutGrid
+  LayoutGrid,
+  BrainCircuit
 } from "lucide-react";
 
 export default function DashboardPage() {
   const { user, setAuth, logout } = useAuthStore();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [loading, setLoading] = useState(true);
+  const fetchAttempted = useRef(false);
 
   useEffect(() => {
+    if (fetchAttempted.current) return;
+
     const token = searchParams.get("token");
     const savedToken = localStorage.getItem("auth_token");
-    
-    const fetchUser = async (authToken: string) => {
-      try {
-        const response = await apiClient.get("/auth/me", {
-          headers: { Authorization: `Bearer ${authToken}` }
+
+    if (token || (!user && savedToken)) {
+      fetchAttempted.current = true;
+      const authToken = (token || savedToken)!;
+
+      apiClient
+        .get("/auth/me", {
+          headers: { Authorization: `Bearer ${authToken}` },
+        })
+        .then((response) => {
+          setAuth(response.data, authToken);
+          if (token) {
+            router.replace("/dashboard");
+            toast.success("Welcome to Udyame Architect!");
+          }
+        })
+        .catch((error) => {
+          console.error("Failed to fetch user:", error);
+          logout();
+          router.replace("/");
         });
-        const userData = response.data;
-        setAuth(userData, authToken);
-        
-        if (!userData.plan_id || !userData.subscription_plan?.is_active) {
-          router.replace("/plans");
-          return;
-        }
-
-        if (token) {
-          router.replace("/dashboard");
-          toast.success("Welcome to Udyame Architect!");
-        }
-      } catch (error) {
-        console.error("Failed to fetch user:", error);
-        logout();
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    if (token) {
-      fetchUser(token);
       return;
-    } 
-    
-    if (!user) {
-      if (savedToken) {
-        fetchUser(savedToken);
-      } else {
-        router.replace("/");
-      }
-    } else {
-      if (!user.plan_id || !user.subscription_plan?.is_active) {
-        router.replace("/plans");
-      }
-      setLoading(false);
     }
-  }, [router, searchParams, setAuth]);
 
-  if (loading || !user || !user.subscription_plan?.is_active) {
+    if (!user) {
+      router.replace("/");
+    } else if (!user.plan_id || !user.subscription_plan?.is_active) {
+      router.replace("/plans");
+    }
+    // If user exists with an active plan, do nothing — the dashboard renders below.
+  }, [user, router, searchParams, setAuth, logout]);
+
+  // Derive loading from the user object — no state needed
+  if (!user || !user.subscription_plan?.is_active) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#05070a]">
         <div className="flex flex-col items-center gap-6">

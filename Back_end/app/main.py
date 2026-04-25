@@ -24,12 +24,17 @@ if hasattr(settings, 'SENTRY_DSN') and settings.SENTRY_DSN:
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Startup
+    # Startup — each service initializes independently
     try:
         await redis_client.connect()
+    except Exception as e:
+        print(f"[STARTUP] Redis unavailable: {e} — rate limiting and caching disabled.")
+
+    try:
         await storage_service.ensure_buckets_exist()
     except Exception as e:
-        print(f"STARTUP ERROR: {e}")
+        print(f"[STARTUP] MinIO unavailable: {e} — file storage disabled until reconnection.")
+
     yield
     # Shutdown
     await redis_client.disconnect()
@@ -51,7 +56,11 @@ def get_application() -> FastAPI:
 
     _app.add_middleware(
         CORSMiddleware,
-        allow_origins=["*"],
+        allow_origins=[
+            "http://localhost:3000",
+            "http://127.0.0.1:3000",
+            settings.FRONTEND_URL
+        ],
         allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],

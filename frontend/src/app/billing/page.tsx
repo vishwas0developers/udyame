@@ -51,6 +51,8 @@ export default function BillingPage() {
       return;
     }
 
+    let retried = false;
+
     const fetchPlanDetails = async () => {
       try {
         const response = await apiClient.get("/plans/plans");
@@ -62,7 +64,14 @@ export default function BillingPage() {
           router.push("/plans");
         }
       } catch (error) {
+        // Retry once after a short delay (handles backend cold-start)
+        if (!retried) {
+          retried = true;
+          await new Promise((r) => setTimeout(r, 1500));
+          return fetchPlanDetails();
+        }
         console.error("Failed to fetch plan:", error);
+        toast.error("Could not load plan details. Please try again.");
       } finally {
         setLoading(false);
       }
