@@ -63,14 +63,22 @@ export default function DashboardPage() {
 
     if (!user) {
       router.replace("/");
-    } else if (!user.plan_id || !user.subscription_plan?.is_active) {
+    } else if (!user.plan_id) {
+      // Use replace to avoid back-button loop
+      router.replace("/plans");
+    } else if (user.subscription_plan && !user.subscription_plan.is_active) {
+      // User has a plan but it's not active (e.g. expired)
       router.replace("/plans");
     }
     // If user exists with an active plan, do nothing — the dashboard renders below.
   }, [user, router, searchParams, setAuth, logout]);
 
-  // Derive loading from the user object — no state needed
-  if (!user || !user.subscription_plan?.is_active) {
+  // Derive loading from the user object — robust guard
+  const hasLoadedUser = !!user;
+  const hasPlan = !!user?.plan_id;
+  const isPlanActive = !!user?.subscription_plan?.is_active;
+
+  if (!hasLoadedUser || !hasPlan || !isPlanActive) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#05070a]">
         <div className="flex flex-col items-center gap-6">

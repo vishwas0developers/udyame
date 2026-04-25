@@ -113,7 +113,10 @@ class RestartHandler(FileSystemEventHandler):
         log_file.write(f"\n--- System Start at {time.strftime('%Y-%m-%d %H:%M:%S')} ---\n")
         log_file.flush()
 
-        for svc in services:
+        for i, svc in enumerate(services):
+            if i > 0:
+                time.sleep(1.5) # Stagger starts to prevent DB connection spikes
+            
             cmd = [
                 sys.executable, "-m", "uvicorn", 
                 self.app_module, 

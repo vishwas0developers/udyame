@@ -178,7 +178,8 @@ async def google_callback(code: str, response: Response, db: Session = Depends(g
 
 @router.get("/me", response_model=UserOut)
 def get_me(user_id: str = Depends(security.get_current_user_id), db: Session = Depends(get_db)):
-    user = db.query(User).filter(User.id == user_id).first()
+    from sqlalchemy.orm import joinedload
+    user = db.query(User).options(joinedload(User.subscription_plan)).filter(User.id == user_id).first()
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
     return user
