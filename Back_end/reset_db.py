@@ -47,7 +47,7 @@ def reset_database():
         print("[4/5] Re-seeding canonical plans...")
         seed_plans()
         
-        # 5. Restore Admins
+        # 5. Restore or Seed Admin
         if admin_backups:
             print("[5/5] Restoring ADMIN accounts...")
             db = SessionLocal()
@@ -60,9 +60,11 @@ def reset_database():
             finally:
                 db.close()
         else:
-            print("[5/5] No admins to restore.")
+            print("[5/5] No admins to restore. Seeding default admin...")
+            from seed_admin import seed_admin
+            seed_admin()
 
-        print("\n[SUCCESS] Database is now fresh. ADMIN accounts were preserved.")
+        print("\n[SUCCESS] Database is now fresh. Admin access is ready.")
     
     except Exception as e:
         print(f"\n[ERROR] Reset failed: {e}")

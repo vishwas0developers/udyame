@@ -58,12 +58,6 @@
                             Pending
                         </span>
                         {% endif %}
-                        
-                        {% if user.role == "ADMIN" %}
-                        <span class="ml-2 px-2 py-1 bg-purple-500/10 text-purple-400 rounded-full text-[10px] font-bold border border-purple-500/20">
-                            Admin
-                        </span>
-                        {% endif %}
                     </td>
                     <td class="px-6 py-4 text-slate-400 text-sm">
                         {{ user.created_at.strftime('%b %d, %Y') }}

@@ -102,10 +102,18 @@ async def admin_login_post(
 ):
     user = db.query(User).filter(User.email == email).first()
     
-    if not user or not security.verify_password(password, user.password_hash) or user.role != "ADMIN":
+    error_msg = None
+    if not user:
+        error_msg = "Account not found."
+    elif not security.verify_password(password, user.password_hash):
+        error_msg = "Incorrect password."
+    elif user.role != "ADMIN":
+        error_msg = "Access Denied: Administrative privileges required."
+        
+    if error_msg:
         return templates.TemplateResponse("login.html", {
             "request": request, 
-            "error": "Invalid credentials or unauthorized access.", 
+            "error": error_msg, 
             "next_url": next
         })
 
@@ -123,7 +131,8 @@ async def admin_login_post(
         value=token, 
         httponly=True, 
         max_age=12 * 3600,
-        samesite="lax"
+        samesite="lax",
+        path="/" # Ensure cookie is available for all sub-routes
     )
     return response
 
@@ -137,7 +146,7 @@ async def admin_dashboard(request: Request, db: Session = Depends(get_db)):
     plan_count = 0
     
     if not requires_login:
-        user_count = db.query(User).count()
+        user_count = db.query(User).filter(User.role != "ADMIN").count()
         pending_questions = db.query(QuestionBank).filter(QuestionBank.status == "PENDING").count()
         active_models = db.query(AIModel).filter(AIModel.is_active == True).count()
         plan_count = db.query(SubscriptionPlan).count()
@@ -239,7 +248,8 @@ async def admin_users(request: Request, db: Session = Depends(get_db)):
     users = []
     if not requires_login:
         from sqlalchemy.orm import joinedload
-        users = db.query(User).options(joinedload(User.subscription_plan)).order_by(User.created_at.desc()).all()
+        # Isolate Admin users from general management
+        users = db.query(User).filter(User.role != "ADMIN").options(joinedload(User.subscription_plan)).order_by(User.created_at.desc()).all()
         
     return templates.TemplateResponse("users.html", {
         "request": request,

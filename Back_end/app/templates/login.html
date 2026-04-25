@@ -24,6 +24,13 @@
         </div>
 
         <div class="bg-slate-900 p-8 rounded-2xl border border-slate-700 shadow-2xl">
+            {% if error %}
+            <div class="mb-6 p-4 bg-red-500/10 border border-red-500/20 rounded-xl flex items-center gap-3 text-red-400 text-sm">
+                <i class="fas fa-exclamation-circle"></i>
+                <p>{{ error }}</p>
+            </div>
+            {% endif %}
+
             <form action="/login" method="POST" class="space-y-6">
                 {% if next_url %}
                 <input type="hidden" name="next" value="{{ next_url }}">
