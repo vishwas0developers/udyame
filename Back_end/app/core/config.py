@@ -57,6 +57,7 @@ class Settings(BaseSettings):
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60  # 1 hour
     REFRESH_TOKEN_EXPIRE_DAYS: int = 7    # 7 days
+    COOKIE_SECURE: bool = True
 
     # Google OAuth
     GOOGLE_CLIENT_ID: Optional[str] = None

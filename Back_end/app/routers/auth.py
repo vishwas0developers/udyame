@@ -21,7 +21,7 @@ def set_auth_cookies(response: Response, access_token: str, refresh_token: str):
         key="access_token",
         value=access_token,
         httponly=True,
-        secure=True,
+        secure=settings.COOKIE_SECURE,
         samesite="lax",
         max_age=settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60
     )
@@ -29,7 +29,7 @@ def set_auth_cookies(response: Response, access_token: str, refresh_token: str):
         key="refresh_token",
         value=refresh_token,
         httponly=True,
-        secure=True,
+        secure=settings.COOKIE_SECURE,
         samesite="lax",
         max_age=settings.REFRESH_TOKEN_EXPIRE_DAYS * 24 * 3600
     )
@@ -192,6 +192,9 @@ def refresh_token(request: Request, response: Response, db: Session = Depends(ge
         
     db_token = db.query(RefreshToken).filter(RefreshToken.token == rf_token, RefreshToken.is_revoked == False).first()
     if not db_token or db_token.expires_at < datetime.utcnow():
+        # Clear cookies if the token is invalid/expired to prevent repeat failures
+        response.delete_cookie("access_token")
+        response.delete_cookie("refresh_token")
         raise HTTPException(status_code=401, detail="Invalid or expired refresh token")
         
     db_token.is_revoked = True

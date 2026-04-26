@@ -89,9 +89,13 @@ apiClient.interceptors.response.use(
         // Refresh failed, logout user and show login popup instead of redirecting
         localStorage.removeItem("auth_token");
         if (typeof window !== "undefined") {
-          useAuthStore.getState().logout();
+          const authStore = useAuthStore.getState();
+          if (authStore.isAuthenticated) {
+            authStore.logout();
+          }
         }
-        return Promise.reject(refreshError);
+        // Return a silent rejection for the refresh call to avoid double console errors
+        return Promise.reject({ ...refreshError, _silent: true });
       } finally {
         isRefreshing = false;
       }
