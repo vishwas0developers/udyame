@@ -95,7 +95,8 @@ apiClient.interceptors.response.use(
           }
         }
         // Return a silent rejection for the refresh call to avoid double console errors
-        return Promise.reject({ ...refreshError, _silent: true });
+        const errorData = refreshError instanceof Object ? { ...refreshError, _silent: true } : refreshError;
+        return Promise.reject(errorData);
       } finally {
         isRefreshing = false;
       }
